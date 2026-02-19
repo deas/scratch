@@ -1,0 +1,37 @@
+stages:
+  - format
+  - lint
+  - test
+
+variables:
+  GIT_DEPTH: 10
+
+format:
+  stage: format
+  when: manual
+  script:
+    - echo "Running format check..."
+    # Add your format commands here (e.g., prettier, black, rustfmt, gofmt)
+    - echo "Format check complete"
+  tags:
+    - docker
+
+lint:
+  stage: lint
+  when: manual
+  script:
+    - echo "Running linting..."
+    # Add your lint commands here (e.g., eslint, flake8, pylint, clippy, golangci-lint)
+    - echo "Linting complete"
+  tags:
+    - docker
+
+test:
+  stage: test
+  when: manual
+  script:
+    - echo "Running tests..."
+    # Add your test commands here (e.g., pytest, jest, cargo test, go test)
+    - echo "Tests complete"
+  tags:
+    - docker
