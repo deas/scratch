@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+build() {
+  local path="$1"
+  # echo "Building: $path"
+  cat <<EOF
+{
+  "Data": {
+    "Europe": {
+      "Germany": {
+        "ID_101": "a",
+        "ID_102": "b"
+      }
+    },
+    "Americas": {
+      "USA": {
+        "ID_201": "c"
+      }
+    }
+  }
+}
+EOF
+}
+
+to_table() {
+  local format="$1"
+  jq '[
+  to_entries[] | .key as $l1 |
+  .value | to_entries[] | .key as $l2 |
+  .value | to_entries[] | .key as $l3 |
+  .value | [
+    $l1,
+    $l2,
+    $l3,
+    .["ID_201"],
+    .["ID_101"]
+  ]]'
+}
+
+to_rows() {
+  jq -r '.[] | map(tostring) | join(" ")'
+}
+
+main() {
+  local cmd="${1:-}"
+
+  case "$cmd" in
+  build)
+    if [[ $# -lt 2 ]]; then
+      echo "Usage: $0 build <path>" >&2
+      exit 1
+    fi
+    build "$2"
+    ;;
+  to-table)
+    if [[ $# -lt 2 ]]; then
+      echo "Usage: $0 to-table <format>" >&2
+      exit 1
+    fi
+    to_table "$2"
+    ;;
+  to-rows)
+    to_rows
+    ;;
+  *)
+    echo "Usage: $0 {build <path>|to-table <format>|to-rows}" >&2
+    exit 1
+    ;;
+  esac
+}
+
+main "$@"
