@@ -25,7 +25,8 @@ EOF
 }
 
 to_table() {
-  local format="$1"
+  # local format="$1"
+  local format=".[\"ID_201\"], .[\"ID_101\"]"
   jq '[
   to_entries[] | .key as $l1 |
   .value | to_entries[] | .key as $l2 |
@@ -33,9 +34,7 @@ to_table() {
   .value | [
     $l1,
     $l2,
-    $l3,
-    .["ID_201"],
-    .["ID_101"]
+    $l3,'"${format}"'
   ]]'
 }
 
