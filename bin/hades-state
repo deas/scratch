@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-
+#
+# Build, transform to table and transformt table to rows for hades state data.
+#
+# ./hades-state build foo | ./hades-state to-table "abc" | ./hades-state to-rows
 set -euo pipefail
 
 build() {
