@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana-poc
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
+      # - GF_SECURITY_ADMIN_PASSWORD=admin # Change this for production!
+      # Enable anonymous access
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      # Set the organization name they land in (usually 'Main Org.')
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      # Set the role to 'Editor' so they can save/write
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+      # (Optional) Hide the login form entirely so they don't even see the "Sign In" button
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      # - ./provisioning:/etc/grafana/provisioning
+      # - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:

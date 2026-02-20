@@ -1,0 +1,30 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "datasource": { "type": "yesoreyer-infinity-datasource", "uid": "GitLab-JSON-PoC" },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "showHeader": true, "footer": { "show": false } },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "type": "json",
+          "source": "url",
+          "url": "https://gitlab.com/api/v4/projects/YOUR_ID/repository/files/YOUR_PATH/raw?ref=main",
+          "root_is_not_array": false,
+          "columns": [],
+          "filters": [],
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "title": "GitLab JSON Data Table",
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 38,
+  "title": "GitLab PoC Dashboard",
+  "uid": "gitlab-poc-01"
+}

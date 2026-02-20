@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+  - name: GitLab-JSON-PoC
+    type: yesoreyer-infinity-datasource
+    access: proxy
+    isDefault: true
+    jsonData:
+      # This tells Infinity to look for a specific header in every request
+      global_queries: []
+      customHeaders:
+        - name: "PRIVATE-TOKEN"
+          value: "${GITLAB_TOKEN}" # We will pass this via Docker environment
+    editable: true
