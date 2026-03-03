@@ -1,0 +1,53 @@
+#!/bin/bash
+
+DEFAULT_REGISTRY="docker.io"
+
+order() {
+  local oci_name="$1"
+  echo "$oci_name"
+}
+
+import() {
+  local oci_name="$1"
+  local registry="${2:-$DEFAULT_REGISTRY}"
+
+  local tag="${registry}/${oci_name}"
+
+  sudo podman pull "$oci_name"
+  sudo podman tag "$oci_name" "$tag"
+  sudo podman push "$tag"
+}
+
+help() {
+  cat <<'EOF'
+Usage: hades-oci <command> [args...]
+
+Commands:
+  order <oci_name>               Print the OCI image name
+  import <oci_name> [registry]   Pull an OCI image, tag it with the registry, and push it
+  help                           Show this help message
+
+Examples:
+  hades-oci order myimage:latest
+  hades-oci import myimage:latest docker.io
+
+Environment:
+  DEFAULT_REGISTRY               Default registry to use (default: docker.io)
+EOF
+}
+
+case "$1" in
+order)
+  order "$2"
+  ;;
+import)
+  import "$2" "$3"
+  ;;
+help)
+  help
+  ;;
+*)
+  help
+  exit 1
+  ;;
+esac
