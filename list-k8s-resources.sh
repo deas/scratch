@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Check if root key argument is provided
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 <root_key>" >&2
-  exit 1
-fi
+# if [ $# -eq 0 ]; then
+#   echo "Usage: $0 <root_key>" >&2
+#   exit 1
+# fi
 
 # ROOT_KEY="$1"
 
@@ -12,26 +12,33 @@ fi
 # result="{\"$ROOT_KEY\":{"
 
 function items_json() {
-  # Get services from all namespaces
-  # services_json=$(kubectl get services --all-namespaces -o json 2>/dev/null)
-  local root
-  root=$1
+  ## customer/type/instance
+  local ctx
   local result
-  result="{\"$root\":{"
-  root=$1
   local item
-  item=$2
   local entries
-  entries=$(kubectl get $item --all-namespaces -o json |
-    jq -r '.items[] | "\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}"' 2>/dev/null | paste -sd ',' -)
+  local item_type
+  local fields
+  ctx=$1
+  result="{\"$ctx\":{"
+  item=$2
+  item_type=$3
+  fields=$4
+  # set -x
+  entries=$(kubectl --context $ctx get $item --all-namespaces -o json |
+    jq -r '.items[] | "'$fields"\"" 2>/dev/null | paste -sd ',' -)
+  # jq -r '.items[] | "\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}"' 2>/dev/null | paste -sd ',' -)
   if [ -n "$entries" ]; then
-    result="${result}\"services\":{${entries}}}}"
+    result="${result}\"$item_type\":{${entries}}}}"
   else
-    result="${result}\"services\":{}}}"
+    result="${result}\"$item_type\":{}}}"
   fi
-  echo $result
+  echo "$result"
 }
-items_json r svc
+fields='\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}'
+# echo $fields
+items_json kind-kind svc srv $fields
+# items_json r deployment $fields
 # echo $(items_json s svc "foo")
 # echo $result
 # # Add comma between resource types
