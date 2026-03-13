@@ -25,7 +25,7 @@ fields='\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}'
 # echo $fields
 for c in kind-kind; do
   cat <<EOF
-{"customer": {
+{"$c": {
   "adb":$(items_json $c svc $fields),
   "bdb":$(items_json $c svc $fields)
   }
