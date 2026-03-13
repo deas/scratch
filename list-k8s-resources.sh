@@ -20,7 +20,8 @@ function items_json() {
   local item_type
   local fields
   ctx=$1
-  result="{\"$ctx\":{"
+  # result="{\"$ctx\":{"
+  result="{"
   item=$2
   item_type=$3
   fields=$4
@@ -29,15 +30,19 @@ function items_json() {
     jq -r '.items[] | "'$fields"\"" 2>/dev/null | paste -sd ',' -)
   # jq -r '.items[] | "\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}"' 2>/dev/null | paste -sd ',' -)
   if [ -n "$entries" ]; then
-    result="${result}\"$item_type\":{${entries}}}}"
+    result="${result}\"$item_type\":{${entries}}}"
   else
-    result="${result}\"$item_type\":{}}}"
+    result="${result}\"$item_type\":{}}"
   fi
   echo "$result"
 }
 fields='\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}'
 # echo $fields
-items_json kind-kind svc srv $fields
+for c in kind-kind; do
+  bar=$(items_json $c svc srv $fields)
+  echo $bar
+done
+# items_json kind-kind svc srv $fields
 # items_json r deployment $fields
 # echo $(items_json s svc "foo")
 # echo $result
