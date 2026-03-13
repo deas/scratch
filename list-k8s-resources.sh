@@ -24,6 +24,11 @@ function items_json() {
 fields='\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}'
 # echo $fields
 for c in kind-kind; do
-  bar='{"adb":'$(items_json $c svc $fields)'}'
-  echo $bar
+  cat <<EOF
+{"customer": {
+  "adb":$(items_json $c svc $fields),
+  "bdb":$(items_json $c svc $fields)
+  }
+}
+EOF
 done
