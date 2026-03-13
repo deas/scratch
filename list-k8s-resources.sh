@@ -22,7 +22,7 @@ function items_json() {
   local item
   item=$2
   local entries
-  entries=$(kubectl get services --all-namespaces -o json |
+  entries=$(kubectl get $item --all-namespaces -o json |
     jq -r '.items[] | "\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}"' 2>/dev/null | paste -sd ',' -)
   if [ -n "$entries" ]; then
     result="${result}\"services\":{${entries}}}}"
@@ -31,7 +31,7 @@ function items_json() {
   fi
   echo $result
 }
-items_json r
+items_json r svc
 # echo $(items_json s svc "foo")
 # echo $result
 # # Add comma between resource types
