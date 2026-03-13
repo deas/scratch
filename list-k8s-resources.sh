@@ -8,7 +8,7 @@ function items_json() {
   local fields
   ctx=$1
   item=$2
-  fields=$4
+  fields=$3
   # set -x
   entries=$(kubectl --context $ctx get $item --all-namespaces -o json |
     jq -r '.items[] | "'$fields"\"" 2>/dev/null | paste -sd ',' -)
@@ -24,6 +24,6 @@ function items_json() {
 fields='\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}'
 # echo $fields
 for c in kind-kind; do
-  bar='{"adb":'$(items_json $c svc srv $fields)'}'
+  bar='{"adb":'$(items_json $c svc $fields)'}'
   echo $bar
 done
