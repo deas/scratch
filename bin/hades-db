@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+#
+# CLI tool for managing database operations across namespaces.
+# Filters namespaces by pattern: <db><5-digits>
+#
+# Usage: hades-db <db> [kubectl-context]
+#
+set -euo pipefail
+
+# Database handler functions
+
+handle_mariadb() {
+  local namespace="$1"
+  echo "Processing MariaDB namespace: $namespace"
+}
+
+handle_postgresql() {
+  local namespace="$1"
+  echo "Processing PostgreSQL namespace: $namespace"
+}
+
+handle_elastic() {
+  local namespace="$1"
+  echo "Processing Elastic namespace: $namespace"
+}
+
+# Get the appropriate handler function for a database type
+get_handler() {
+  local db="$1"
+  case "$db" in
+  m)
+    echo "handle_mariadb"
+    ;;
+  p)
+    echo "handle_postgresql"
+    ;;
+  e)
+    echo "handle_mongodb"
+    ;;
+  *)
+    echo ""
+    ;;
+  esac
+}
+
+# Main function
+main() {
+  if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <db> [kubectl-context]" >&2
+    echo "" >&2
+    echo "Supported databases: m, p, " >&2
+    exit 1
+  fi
+
+  local db="$1"
+  local context="${2:-}"
+
+  # Validate database type
+  local handler
+  handler=$(get_handler "$db")
+  if [[ -z "$handler" ]]; then
+    echo "Error: Unknown database type '$db'" >&2
+    echo "Supported databases: m, p, e" >&2
+    exit 1
+  fi
+
+  # Build kubectl command with optional context
+  local kubectl_cmd="kubectl"
+  if [[ -n "$context" ]]; then
+    kubectl_cmd="kubectl --context=$context"
+  fi
+
+  # Get namespaces matching pattern: <db><5-digits>
+  local namespaces
+  namespaces=$($kubectl_cmd get namespaces -o name 2>/dev/null |
+    sed 's/^namespace\///' |
+    grep -E "^${db}[0-9]{5}$" || true)
+
+  if [[ -z "$namespaces" ]]; then
+    echo "No namespaces found matching pattern: ${db}<5-digits>"
+    exit 0
+  fi
+
+  # Process each matching namespace
+  while IFS= read -r namespace; do
+    if [[ -n "$namespace" ]]; then
+      "$handler" "$namespace"
+    fi
+  done <<<"$namespaces"
+}
+
+main "$@"

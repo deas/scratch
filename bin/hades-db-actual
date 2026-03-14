@@ -10,7 +10,7 @@ function items_json() {
   item=$2
   fields=$3
   # set -x
-  entries=$(kubectl --context $ctx get $item --all-namespaces -o json |
+  entries=$(kubectl --context "$ctx" get "$item" --all-namespaces -o json |
     jq -r '.items[] | "'$fields"\"" 2>/dev/null | paste -sd ',' -)
   # jq -r '.items[] | "\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}"' 2>/dev/null | paste -sd ',' -)
   if [ -n "$entries" ]; then
@@ -26,8 +26,8 @@ fields='\"\(.metadata.name)\":{\"namespace\":\"\(.metadata.namespace)\"}'
 for c in kind-kind; do
   cat <<EOF
 {"$c": {
-  "adb":$(items_json $c svc $fields),
-  "bdb":$(items_json $c svc $fields)
+  "adb":$(items_json $c svc "$fields"),
+  "bdb":$(items_json $c svc "$fields")
   }
 }
 EOF

@@ -5,6 +5,29 @@
 # ./hades-state build foo | ./hades-state to-table "abc" | ./hades-state to-rows
 set -euo pipefail
 
+merge() {
+  {
+    cat <<EOF
+{
+  "project": "Apollo",
+  "settings": {
+    "debug": true,
+    "metrics": {"port": 8080}
+  }
+}
+EOF
+    cat <<EOF
+{
+  "project": "Apollo",
+  "version": "2.1.0",
+  "settings": {
+    "metrics": {"enabled": true}
+  }
+}
+EOF
+  } | jq -s 'reduce .[] as $item ({}; . * $item)'
+}
+
 build() {
   local path="$1"
   # echo "Building: $path"
@@ -63,11 +86,14 @@ main() {
     fi
     to_table "$2"
     ;;
+  merge)
+    merge
+    ;;
   to-rows)
     to_rows
     ;;
   *)
-    echo "Usage: $0 {build <path>|to-table <format>|to-rows}" >&2
+    echo "Usage: $0 {build <path>|to-table <format>|to-rows|merge}" >&2
     exit 1
     ;;
   esac
