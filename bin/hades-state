@@ -6,8 +6,11 @@
 set -euo pipefail
 
 merge() {
-  {
-    cat <<EOF
+  jq -s 'reduce .[] as $item ({}; . * $item)'
+}
+
+seq() {
+  cat <<EOF
 {
   "project": "Apollo",
   "settings": {
@@ -16,7 +19,7 @@ merge() {
   }
 }
 EOF
-    cat <<EOF
+  cat <<EOF
 {
   "project": "Apollo",
   "version": "2.1.0",
@@ -25,7 +28,6 @@ EOF
   }
 }
 EOF
-  } | jq -s 'reduce .[] as $item ({}; . * $item)'
 }
 
 build() {
@@ -92,8 +94,11 @@ main() {
   to-rows)
     to_rows
     ;;
+  seq)
+    seq
+    ;;
   *)
-    echo "Usage: $0 {build <path>|to-table <format>|to-rows|merge}" >&2
+    echo "Usage: $0 {build <path>|to-table <format>|to-rows|merge|seq}" >&2
     exit 1
     ;;
   esac
