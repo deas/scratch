@@ -1,5 +1,3 @@
-import time
-
 from prometheus_client import REGISTRY, start_http_server
 from prometheus_client.core import GaugeMetricFamily
 from prometheus_client.registry import Collector
@@ -21,7 +19,5 @@ class VPCCollector(Collector):
 def serve(args: dict, port: int = 8000):
     print(f"Starting up Exporter at port {port}")
     REGISTRY.register(VPCCollector())
-    start_http_server(port)
-
-    while True:
-        time.sleep(1)
+    _, thread = start_http_server(port)
+    thread.join()
