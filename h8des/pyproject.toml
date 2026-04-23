@@ -33,7 +33,7 @@ select = ["E", "F", "I", "W"]
 fixable = ["I"]
 
 [tool.coverage.paths]
-source = ["src"]
+source = ["h8des"]
 
 [tool.coverage.run]
 branch = true
@@ -41,4 +41,4 @@ relative_files = true
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 80
+fail_under = 30

@@ -33,7 +33,7 @@ format:
 
 ## Run tests
 test:
-	@.venv/bin/python -m pytest --cov=src --cov-report xml --log-level=WARNING --disable-pytest-warnings tests
+	@.venv/bin/python -m pytest --cov=h8des --cov-report xml --log-level=WARNING --disable-pytest-warnings tests
 
 ## Run all preflight checks
 preflight: check test

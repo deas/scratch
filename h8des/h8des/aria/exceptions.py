@@ -6,8 +6,10 @@ class LoginException(Exception):
             value (str): Error message
         """
         self.value = value
+
     def __str__(self) -> None:
-        return(repr(self.value))
+        return repr(self.value)
+
 
 class RestRequestException(Exception):
     def __init__(self, value: str, status_code: int) -> None:
@@ -19,8 +21,10 @@ class RestRequestException(Exception):
         """
         self.value = value
         self.status_code = status_code
+
     def __str__(self) -> None:
-        return(repr(self.value))
+        return repr(self.value)
+
 
 class DeploymentNotFoundException(Exception):
     def __init__(self, value: str) -> None:
@@ -30,5 +34,6 @@ class DeploymentNotFoundException(Exception):
             value (str): Error message
         """
         self.value = value
+
     def __str__(self) -> None:
-        return(repr(self.value))
+        return repr(self.value)

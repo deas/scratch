@@ -15,9 +15,7 @@ class AriaDeploymentAPI:
                 "Deployment with name %s was not found" % name
             )
         return (
-            self.getDeploymentById(
-                deployments[0]["content"][0]["id"], resources
-            )
+            self.getDeploymentById(deployments[0]["id"], resources)
             if resources
             else deployments[0]
         )
