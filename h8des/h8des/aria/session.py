@@ -1,7 +1,9 @@
 import json
+
 import requests
 
-from .exceptions import RestRequestException, LoginException
+from .exceptions import LoginException, RestRequestException
+
 
 class AriaSession():
     def __init__(self, hostname: str, username: str, password: str) -> None:

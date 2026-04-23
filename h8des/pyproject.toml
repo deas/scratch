@@ -1,0 +1,36 @@
+[project]
+name = "h8des"
+version = "0.0.1"
+description = "h8des"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "requests",
+  #  "click",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "ruff", "watchdog", "pytest-mock", "debugpy"]
+
+[project.scripts]
+vpc-metrics = "h8des.vpc_metrics:main"
+
+[tool.ruff]
+exclude = [".env", ".venv", "venv", "notebooks"]
+line-length = 79
+
+[tool.ruff.lint]
+ignore = ["E501"]
+select = ["E", "F", "I", "W"]
+fixable = ["I"]
+
+[tool.coverage.paths]
+source = ["src"]
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80

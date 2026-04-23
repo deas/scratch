@@ -1,5 +1,6 @@
-from .session import AriaSession
 from .exceptions import DeploymentNotFoundException, RestRequestException
+from .session import AriaSession
+
 
 class AriaDeploymentAPI():
     def __init__(self, session: AriaSession) -> None:
