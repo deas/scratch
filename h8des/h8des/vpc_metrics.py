@@ -2,7 +2,7 @@
 
 # from time import sleep
 import json
-from argparse import ArgumentParser  # , FileType
+from argparse import ArgumentParser, Namespace  # , FileType
 from os import environ
 from sys import exit, stderr
 
@@ -13,29 +13,39 @@ from h8des.aria.exceptions import (
     RestRequestException,
 )
 from h8des.aria.session import AriaSession
+from h8des.prom.vpc_export import serve
 
 
 def main() -> None:
     """ """
     args = __load_args()
 
-    try:
-        session = AriaSession(args.hostname, args.username, args.password)
-    except LoginException:
-        __exit_error(
-            "Could not login to '%s' with user '%s'"
-            % (args.hostname, args.username)
-        )
+    # session: AriaSession | None = None
+
+    # try:
+    #     session = AriaSession(
+    #         args["hostname"], args["username"], args["password"]
+    #     )
+    # except LoginException:
+    #     __exit_error(
+    #         "Could not login to '%s' with user '%s'"
+    #         % (args["hostname"], args["username"])
+    #     )
 
     try:
         if args.action == "access_token":
-            __action_show_token(session)
+            __action_show_token(
+                AriaSession(args.hostname, args.username, args.password)
+            )
         elif args.action == "deployment":
-            __action_getDeployment(session, args.project)
+            __action_getDeployment(
+                AriaSession(args.hostname, args.username, args.password),
+                args.project,
+            )
         elif args.action == "serve":
-            pass
-        # elif args.action == "getProjectById":
-        #     __action_getProjectById(session,args.project)
+            serve({}, 8001)
+        # elif args["action"] == "getProjectById":
+        #     __action_getProjectById(session,args["project"])
     except RestRequestException as e:
         __exit_error(
             "API Request failed with HTTP/%s and message '%s'"
@@ -68,7 +78,7 @@ def __exit_okay(out: dict) -> None:
     exit(0)
 
 
-def __load_args() -> dict:
+def __load_args() -> Namespace:
     parser = ArgumentParser(
         description="This tool connects to VMware Aria and allows you to order and manage deployments",
         epilog="The Aria Client is developed and maintained by the HADES team.",
