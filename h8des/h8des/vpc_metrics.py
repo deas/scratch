@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from os import environ
-from sys import exit, stderr
-
 # from time import sleep
 import json
 from argparse import ArgumentParser  # , FileType
+from os import environ
+from sys import exit, stderr
 
-from h8des.aria.session import AriaSession
 from h8des.aria.deployment import AriaDeploymentAPI
 from h8des.aria.exceptions import (
     DeploymentNotFoundException,
     LoginException,
     RestRequestException,
 )
+from h8des.aria.session import AriaSession
 
 
 def main() -> None:
@@ -32,7 +31,7 @@ def main() -> None:
         if args.action == "access_token":
             __action_show_token(session)
         elif args.action == "deployment":
-            __action_getProject(session, args.project)
+            __action_getDeployment(session, args.project)
         elif args.action == "serve":
             pass
         # elif args.action == "getProjectById":
@@ -45,56 +44,31 @@ def main() -> None:
 
 
 def __action_show_token(session: AriaSession) -> None:
-    """Show a token
-
-    Args:
-        session (AriaSession): AriaSession object
-    """
-
     __exit_okay(session.token)
 
 
-def __action_show(session: AriaSession, deployment: str) -> None:
-    """Show an Aria Deployment
-
-    Args:
-        session (AriaSession): AriaSession object
-        deployment (str): name of Aria Deployment to delete
-    """
+def __action_getDeployment(
+    session: AriaSession, deployment: str, resources: bool = True
+) -> None:
     deploymentApi = AriaDeploymentAPI(session)
 
     try:
-        __exit_okay(deploymentApi.getDeploymentByName(deployment))
-    except DeploymentNotFoundException as e:
+        __exit_okay(deploymentApi.getDeploymentByName(deployment, resources))
+    except DeploymentNotFoundException as _:
         __exit_error("Deployment '%s' was not found" % deployment)
 
 
 def __exit_error(msg: str) -> None:
-    """Helper to print a error json to stderr and exit with code 1
-
-    Args:
-        msg (str): message to print as value of error key
-    """
     print(json.dumps({"error": msg}, indent=4), file=stderr)
     exit(1)
 
 
 def __exit_okay(out: dict) -> None:
-    """Helper to print a json to stdout and exit with code 0
-
-    Args:
-        out (dict): to print as json string
-    """
     print(json.dumps(out, indent=4))
     exit(0)
 
 
 def __load_args() -> dict:
-    """Helper to define, parse and validate CLI arguments
-
-    Returns:
-        dict: parsed arguments
-    """
     parser = ArgumentParser(
         description="This tool connects to VMware Aria and allows you to order and manage deployments",
         epilog="The Aria Client is developed and maintained by the HADES team.",

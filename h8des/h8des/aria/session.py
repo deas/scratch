@@ -5,7 +5,7 @@ import requests
 from .exceptions import LoginException, RestRequestException
 
 
-class AriaSession():
+class AriaSession:
     def __init__(self, hostname: str, username: str, password: str) -> None:
         """Initializes an authorized REST session with Aria
 
@@ -18,7 +18,7 @@ class AriaSession():
         """
         self.headers = {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
         }
         self.hostname = hostname
 
@@ -37,35 +37,45 @@ class AriaSession():
         self.headers.pop("Authorization", None)
 
         # get refresh token
-        payload = {
-            "username": username,
-            "password": password
-        }
-        url = "https://%s/csp/gateway/am/api/login?access_token" % self.hostname
-        r = requests.post(url=url,
-                            data=json.dumps(payload),
-                            headers=self.headers,
-                            verify=False)
+        payload = {"username": username, "password": password}
+        url = (
+            "https://%s/csp/gateway/am/api/login?access_token" % self.hostname
+        )
+        r = requests.post(
+            url=url,
+            data=json.dumps(payload),
+            headers=self.headers,
+            verify=False,
+        )
         if r.status_code != 200:
-            raise LoginException("Could not get refresh token: [HTTP/%s]: %s" % (r.status_code, r.text))
+            raise LoginException(
+                "Could not get refresh token: [HTTP/%s]: %s"
+                % (r.status_code, r.text)
+            )
         refreshToken = r.json()["refresh_token"]
-        
+
         # get access token
-        payload = {
-            "refreshToken": refreshToken
-        }
+        payload = {"refreshToken": refreshToken}
         url = "https://%s/iaas/api/login" % self.hostname
-        r = requests.post(url=url,
-                          data=json.dumps(payload),
-                          headers=self.headers,
-                          verify=False)
+        r = requests.post(
+            url=url,
+            data=json.dumps(payload),
+            headers=self.headers,
+            verify=False,
+        )
         if r.status_code != 200:
-            raise LoginException("Could not get access token: [HTTP/%s]: %s" % (r.status_code, r.text))
+            raise LoginException(
+                "Could not get access token: [HTTP/%s]: %s"
+                % (r.status_code, r.text)
+            )
         self.token = r.json()
         # token = r.json()
-        
+
         # update header
-        self.headers["Authorization"] = "%s %s" % (self.token["tokenType"], self.token["token"])
+        self.headers["Authorization"] = "%s %s" % (
+            self.token["tokenType"],
+            self.token["token"],
+        )
 
     def get(self, uri: str, params: dict = {}) -> dict:
         """Executes a GET request
@@ -80,11 +90,12 @@ class AriaSession():
         """
         url = "https://%s/%s" % (self.hostname, uri)
         if params:
-            url = "%s?%s" % (url, requests.models.RequestEncodingMixin._encode_params(params))
+            url = "%s?%s" % (
+                url,
+                requests.models.RequestEncodingMixin._encode_params(params),
+            )
 
-        r = requests.get(url=url,
-                         headers=self.headers,
-                         verify=False)
+        r = requests.get(url=url, headers=self.headers, verify=False)
         if r.status_code > 299:
             raise RestRequestException(r.text, r.status_code)
         return r.json()
@@ -102,10 +113,12 @@ class AriaSession():
         """
         url = "https://%s/%s" % (self.hostname, uri)
 
-        r = requests.post(url=url,
-                          data=json.dumps(payload),
-                          headers=self.headers,
-                          verify=False)
+        r = requests.post(
+            url=url,
+            data=json.dumps(payload),
+            headers=self.headers,
+            verify=False,
+        )
         if r.status_code > 299:
             raise RestRequestException(r.text, r.status_code)
         return r.json()
@@ -122,9 +135,7 @@ class AriaSession():
         """
         url = "https://%s/%s" % (self.hostname, uri)
 
-        r = requests.delete(url=url,
-                            headers=self.headers,
-                            verify=False)
+        r = requests.delete(url=url, headers=self.headers, verify=False)
         if r.status_code > 299:
             raise RestRequestException(r.text, r.status_code)
         return r.json()
