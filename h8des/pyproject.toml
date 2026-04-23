@@ -10,7 +10,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "ruff", "watchdog", "pytest-mock", "debugpy"]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "watchdog",
+  "pytest-mock",
+  "requests-mock",
+  "debugpy",
+]
 
 [project.scripts]
 vpc-metrics = "h8des.vpc_metrics:main"
