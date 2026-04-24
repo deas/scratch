@@ -63,7 +63,7 @@ def __action_getDeployment(
     deploymentApi = AriaDeploymentAPI(session)
 
     try:
-        __exit_okay(deploymentApi.getDeploymentByName(deployment, resources))
+        __exit_okay(deploymentApi.getDeploymentByType(resources=resources))
     except DeploymentNotFoundException as _:
         __exit_error("Deployment '%s' was not found" % deployment)
 

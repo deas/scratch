@@ -116,8 +116,8 @@ class TestMain:
         mock_serve.assert_called_once()
         factory = mock_serve.call_args[0][0]
         with patch(
-            "h8des.vpc_metrics.AriaDeploymentAPI.getDeploymentByName",
-            return_value=deployment_by_id,
+            "h8des.vpc_metrics.AriaDeploymentAPI.getDeploymentByType",
+            return_value=[deployment_by_id],
         ):
             metrics = factory()
         assert isinstance(metrics, VPCMetrics)

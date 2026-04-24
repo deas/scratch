@@ -6,7 +6,6 @@ import pytest
 import requests_mock
 
 from h8des.aria.deployment import AriaDeploymentAPI
-from h8des.aria.exceptions import DeploymentNotFoundException
 from h8des.aria.session import AriaSession
 
 TESTS_DIR = Path(__file__).parent
@@ -22,7 +21,7 @@ def load_json(filename):
     return json.loads((TESTS_DIR / filename).read_text())
 
 
-def test_get_deployment_by_name(session):
+def test_get_deployment_by_type(session):
     refresh_token = load_json("refresh-token.json")
     deployment_by_name = load_json("deployment-by-name.json")
     deployment_by_id = load_json("deployment-by-id.json")
@@ -37,7 +36,7 @@ def test_get_deployment_by_name(session):
             json={"tokenType": "Bearer", "token": "access-token"},
         )
         m.get(
-            "https://example.com/deployment/api/deployments?name=deployment-name",
+            "https://example.com/deployment/api/deployments?resourceType=Custom.vpc",
             json=deployment_by_name,
         )
         m.get(
@@ -46,12 +45,12 @@ def test_get_deployment_by_name(session):
         )
 
         api = AriaDeploymentAPI(session)
-        result = api.getDeploymentByName("deployment-name")
+        result = api.getDeploymentByType()
 
-    assert result == deployment_by_id
+    assert result == [deployment_by_id]
 
 
-def test_get_deployment_by_name_not_found(session):
+def test_get_deployment_by_type_not_found(session):
     refresh_token = load_json("refresh-token.json")
 
     with requests_mock.Mocker() as m:
@@ -64,16 +63,17 @@ def test_get_deployment_by_name_not_found(session):
             json={"tokenType": "Bearer", "token": "access-token"},
         )
         m.get(
-            "https://example.com/deployment/api/deployments?name=missing",
+            "https://example.com/deployment/api/deployments?resourceType=Custom.vpc",
             json={"content": [], "totalElements": 0},
         )
 
         api = AriaDeploymentAPI(session)
-        with pytest.raises(DeploymentNotFoundException):
-            api.getDeploymentByName("missing")
+        result = api.getDeploymentByType()
+
+    assert result == []
 
 
-def test_get_deployment_by_name_no_resources(session):
+def test_get_deployment_by_type_no_resources(session):
     refresh_token = load_json("refresh-token.json")
     deployment_by_name = load_json("deployment-by-name.json")
 
@@ -87,11 +87,11 @@ def test_get_deployment_by_name_no_resources(session):
             json={"tokenType": "Bearer", "token": "access-token"},
         )
         m.get(
-            "https://example.com/deployment/api/deployments?name=deployment-name",
+            "https://example.com/deployment/api/deployments?resourceType=Custom.vpc",
             json=deployment_by_name,
         )
 
         api = AriaDeploymentAPI(session)
-        result = api.getDeploymentByName("deployment-name", resources=False)
+        result = api.getDeploymentByType(resources=False)
 
-    assert result == deployment_by_name["content"][0]
+    assert result == deployment_by_name["content"]
