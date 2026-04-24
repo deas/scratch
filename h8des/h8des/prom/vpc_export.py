@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -114,22 +115,23 @@ class VPCMetrics:
 class VPCCollector(Collector):
     """On-demand collector for VPC metrics."""
 
-    def __init__(self, metrics: VPCMetrics):
-        self.metrics = metrics
+    def __init__(self, metrics_factory: Callable[[], VPCMetrics]):
+        self.metrics_factory = metrics_factory
 
     def collect(self):
-        for name, description, value in self.metrics.to_metrics():
+        metrics = self.metrics_factory()
+        for name, description, value in metrics.to_metrics():
             g = GaugeMetricFamily(
                 name,
                 description,
                 labels=["vpc_name", "vpc_id"],
             )
-            g.add_metric([self.metrics.vpc_name, self.metrics.vpc_id], value)
+            g.add_metric([metrics.vpc_name, metrics.vpc_id], value)
             yield g
 
 
-def serve(metrics: VPCMetrics, port: int = 8000):
+def serve(metrics_factory: Callable[[], VPCMetrics], port: int = 8000):
     print(f"Starting up Exporter at port {port}")
-    REGISTRY.register(VPCCollector(metrics))
+    REGISTRY.register(VPCCollector(metrics_factory))
     _, thread = start_http_server(port)
     thread.join()

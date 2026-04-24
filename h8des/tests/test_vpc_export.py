@@ -62,7 +62,7 @@ class TestVPCMetrics:
 class TestVPCCollector:
     def test_collect_yields_gauge_metric_families(self, sample_properties):
         metrics = VPCMetrics.from_properties(sample_properties)
-        collector = VPCCollector(metrics)
+        collector = VPCCollector(lambda: metrics)
         results = list(collector.collect())
 
         assert len(results) == 8
@@ -75,7 +75,7 @@ class TestVPCCollector:
 
     def test_collect_values_match_metrics(self, sample_properties):
         metrics = VPCMetrics.from_properties(sample_properties)
-        collector = VPCCollector(metrics)
+        collector = VPCCollector(lambda: metrics)
         results = {r.name: r.samples[0].value for r in collector.collect()}
 
         assert results["h8des_vpc_vm_quota_cpu_cores"] == 96.0
@@ -86,3 +86,16 @@ class TestVPCCollector:
         assert results["h8des_vpc_namespace_quota_cpu_mhz"] == 300000.0
         assert results["h8des_vpc_namespace_quota_memory_mb"] == 4194000.0
         assert results["h8des_vpc_namespace_quota_storage_mb"] == 20000000.0
+
+    def test_collect_calls_factory_on_every_scrape(self, sample_properties):
+        call_count = 0
+
+        def factory():
+            nonlocal call_count
+            call_count += 1
+            return VPCMetrics.from_properties(sample_properties)
+
+        collector = VPCCollector(factory)
+        list(collector.collect())
+        list(collector.collect())
+        assert call_count == 2

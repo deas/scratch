@@ -7,29 +7,9 @@ from pathlib import Path
 from sys import exit, stderr
 
 from h8des.aria.deployment import AriaDeploymentAPI
-from h8des.aria.exceptions import DeploymentNotFoundException, LoginException
+from h8des.aria.exceptions import LoginException
 from h8des.aria.session import AriaSession
 from h8des.prom.vpc_export import VPCMetrics, serve
-
-
-def fetch_vpc_metrics(
-    api: AriaDeploymentAPI, deployment_name: str
-) -> VPCMetrics:
-    """Fetch VPC metrics from a live Aria deployment.
-
-    Args:
-        api: An initialized AriaDeploymentAPI instance.
-        deployment_name: The name of the deployment to look up.
-
-    Returns:
-        VPCMetrics populated from the deployment properties.
-
-    Raises:
-        DeploymentNotFoundException: If the deployment is not found.
-    """
-    deployment = api.getDeploymentByName(deployment_name)
-    properties = deployment["content"][0]["properties"]
-    return VPCMetrics.from_properties(properties)
 
 
 def main() -> None:
@@ -45,7 +25,9 @@ def main() -> None:
         tests_dir = Path(__file__).parent.parent / "tests"
         raw = json.loads((tests_dir / "deployment-by-id.json").read_text())
         properties = raw["content"][0]["properties"]
-        metrics = VPCMetrics.from_properties(properties)
+
+        def _metrics_factory() -> VPCMetrics:
+            return VPCMetrics.from_properties(properties)
     else:
         if not args.hostname:
             __exit_error(
@@ -73,12 +55,13 @@ def main() -> None:
             )
 
         api = AriaDeploymentAPI(session)
-        try:
-            metrics = fetch_vpc_metrics(api, args.deployment)
-        except DeploymentNotFoundException:
-            __exit_error("Deployment '%s' was not found" % args.deployment)
 
-    serve(metrics, args.serve_port)
+        def _metrics_factory() -> VPCMetrics:
+            deployment = api.getDeploymentByName(args.deployment)
+            props = deployment["content"][0]["properties"]
+            return VPCMetrics.from_properties(props)
+
+    serve(_metrics_factory, args.serve_port)
 
 
 def __load_args() -> Namespace:
