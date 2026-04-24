@@ -49,8 +49,8 @@ def main() -> None:
         api = AriaDeploymentAPI(session)
 
         def _metrics_factory() -> VPCMetrics:
-            deployment = api.getDeploymentByName(args.deployment)
-            props = deployment["content"][0]["properties"]
+            deployments = api.getDeploymentByType()
+            props = deployments[0]["content"][0]["properties"]
             return VPCMetrics.from_properties(props)
 
     serve(_metrics_factory, args.serve_port)
@@ -106,15 +106,6 @@ def __load_args() -> Namespace:
         default=environ.get("ARIA_PROJECT"),
         type=str,
     )
-    parser.add_argument(
-        "-d",
-        "--deployment",
-        dest="deployment",
-        help="Name of Deployment",
-        metavar="DEPLOYMENT",
-        type=str,
-    )
-
     return parser.parse_args()
 
 

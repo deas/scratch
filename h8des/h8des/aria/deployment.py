@@ -6,19 +6,19 @@ class AriaDeploymentAPI:
     def __init__(self, session: AriaSession) -> None:
         self.session = session
 
-    def getDeploymentByName(self, name: str, resources: bool = True) -> dict:
+    def getDeploymentByType(
+        self, type: str = "Custom.vpc", resources: bool = True
+    ) -> list:
         deployments = self.session.get(
-            "deployment/api/deployments", {"name": name}
+            "deployment/api/deployments", {"resourceType": type}
         )["content"]
-        if len(deployments) != 1:
-            raise DeploymentNotFoundException(
-                "Deployment with name %s was not found" % name
-            )
-        return (
-            self.getDeploymentById(deployments[0]["id"], resources)
-            if resources
-            else deployments[0]
-        )
+        if resources:
+            return [
+                self.getDeploymentById(deployment["id"], resources)
+                for deployment in deployments
+            ]
+        else:
+            return deployments
 
     def getDeploymentById(self, id: str, resources: bool = True) -> dict:
         try:
