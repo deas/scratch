@@ -32,15 +32,16 @@ class TestMain:
             serve_port=8001,
             username=None,
             password=None,
-            deployment=None,
         )
         main()
         mock_serve.assert_called_once()
         factory = mock_serve.call_args[0][0]
         metrics = factory()
-        assert isinstance(metrics, VPCMetrics)
-        assert metrics.vpc_name == "vpc-name"
-        assert metrics.vm_quota_cpu_cores == 96.0
+        assert isinstance(metrics, list)
+        assert len(metrics) == 1
+        assert isinstance(metrics[0], VPCMetrics)
+        assert metrics[0].vpc_name == "vpc-name"
+        assert metrics[0].vm_quota_cpu_cores == 96.0
 
     @patch("h8des.vpc_metrics.serve")
     @patch("h8des.vpc_metrics.__load_args")
@@ -50,25 +51,6 @@ class TestMain:
             serve_port=None,
             username=None,
             password=None,
-            deployment=None,
-        )
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-        assert exc_info.value.code == 1
-        mock_serve.assert_not_called()
-
-    @patch("h8des.vpc_metrics.serve")
-    @patch("h8des.vpc_metrics.__load_args")
-    @patch.object(AriaSession, "_AriaSession__authenticate")
-    def test_live_mode_requires_deployment(
-        self, mock_auth, mock_load_args, mock_serve
-    ):
-        mock_load_args.return_value = MagicMock(
-            hostname="example.com",
-            username="user",
-            password="pass",
-            serve_port=8001,
-            deployment=None,
         )
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -87,7 +69,6 @@ class TestMain:
             username="user",
             password="pass",
             serve_port=8001,
-            deployment="test",
         )
         main()
         mock_serve.assert_called_once()
@@ -110,7 +91,6 @@ class TestMain:
             username="user",
             password="pass",
             serve_port=8001,
-            deployment="test",
         )
         main()
         mock_serve.assert_called_once()
@@ -120,6 +100,8 @@ class TestMain:
             return_value=[deployment_by_id],
         ):
             metrics = factory()
-        assert isinstance(metrics, VPCMetrics)
-        assert metrics.vpc_name == "vpc-name"
-        assert metrics.vm_quota_cpu_cores == 96.0
+        assert isinstance(metrics, list)
+        assert len(metrics) == 1
+        assert isinstance(metrics[0], VPCMetrics)
+        assert metrics[0].vpc_name == "vpc-name"
+        assert metrics[0].vm_quota_cpu_cores == 96.0

@@ -31,40 +31,51 @@ class VPCMetrics:
     namespace_quota_storage_mb: float
 
     @classmethod
-    def from_properties(cls, properties: dict) -> "VPCMetrics":
-        """Create a VPCMetrics instance from deployment properties.
+    def from_properties(
+        cls, properties_list: list[dict]
+    ) -> list["VPCMetrics"]:
+        """Create a list of VPCMetrics from deployment properties.
 
         Args:
-            properties: The "properties" dict from a deployment resource.
+            properties_list: List of "properties" dicts from deployment resources.
 
         Returns:
-            VPCMetrics with all quota fields populated.
+            List of VPCMetrics with all quota fields populated.
         """
-        vpc = properties.get("vpc", {})
-        return cls(
-            vpc_name=vpc.get("name", ""),
-            vpc_id=vpc.get("vpcId", ""),
-            vm_quota_cpu_cores=_to_float(vpc.get("VM Quota CPU (Cores)", 0.0)),
-            vm_quota_memory_mb=_to_float(vpc.get("VM Quota Memory (Mb)", 0.0)),
-            s3_storage_quota_mb=_to_float(
-                vpc.get("S3 Storage Quota (Mb)", 0.0)
-            ),
-            vm_quota_storage_mb=_to_float(
-                vpc.get("VM Quota Storage (Mb)", 0.0)
-            ),
-            file_storage_quota_mb=_to_float(
-                vpc.get("File Storage Quota (Mb)", 0.0)
-            ),
-            namespace_quota_cpu_mhz=_to_float(
-                vpc.get("Namespace Quota CPU (Mhz)", 0.0)
-            ),
-            namespace_quota_memory_mb=_to_float(
-                vpc.get("Namespace Quota Memory (Mb)", 0.0)
-            ),
-            namespace_quota_storage_mb=_to_float(
-                vpc.get("Namespace Quota Storage (Mb)", 0.0)
-            ),
-        )
+        all_metrics = []
+        for properties in properties_list:
+            vpc = properties.get("vpc", {})
+            all_metrics.append(
+                cls(
+                    vpc_name=vpc.get("name", ""),
+                    vpc_id=vpc.get("vpcId", ""),
+                    vm_quota_cpu_cores=_to_float(
+                        vpc.get("VM Quota CPU (Cores)", 0.0)
+                    ),
+                    vm_quota_memory_mb=_to_float(
+                        vpc.get("VM Quota Memory (Mb)", 0.0)
+                    ),
+                    s3_storage_quota_mb=_to_float(
+                        vpc.get("S3 Storage Quota (Mb)", 0.0)
+                    ),
+                    vm_quota_storage_mb=_to_float(
+                        vpc.get("VM Quota Storage (Mb)", 0.0)
+                    ),
+                    file_storage_quota_mb=_to_float(
+                        vpc.get("File Storage Quota (Mb)", 0.0)
+                    ),
+                    namespace_quota_cpu_mhz=_to_float(
+                        vpc.get("Namespace Quota CPU (Mhz)", 0.0)
+                    ),
+                    namespace_quota_memory_mb=_to_float(
+                        vpc.get("Namespace Quota Memory (Mb)", 0.0)
+                    ),
+                    namespace_quota_storage_mb=_to_float(
+                        vpc.get("Namespace Quota Storage (Mb)", 0.0)
+                    ),
+                )
+            )
+        return all_metrics
 
     def to_metrics(self) -> list[tuple[str, str, float]]:
         """Return list of (metric_name, description, value) tuples."""
@@ -115,22 +126,27 @@ class VPCMetrics:
 class VPCCollector(Collector):
     """On-demand collector for VPC metrics."""
 
-    def __init__(self, metrics_factory: Callable[[], VPCMetrics]):
+    def __init__(self, metrics_factory: Callable[[], list[VPCMetrics]]):
         self.metrics_factory = metrics_factory
 
     def collect(self):
-        metrics = self.metrics_factory()
-        for name, description, value in metrics.to_metrics():
-            g = GaugeMetricFamily(
-                name,
-                description,
-                labels=["vpc_name", "vpc_id"],
-            )
-            g.add_metric([metrics.vpc_name, metrics.vpc_id], value)
-            yield g
+        all_metrics = self.metrics_factory()
+        families: dict[str, GaugeMetricFamily] = {}
+        for metrics in all_metrics:
+            for name, description, value in metrics.to_metrics():
+                if name not in families:
+                    families[name] = GaugeMetricFamily(
+                        name,
+                        description,
+                        labels=["vpc_name", "vpc_id"],
+                    )
+                families[name].add_metric(
+                    [metrics.vpc_name, metrics.vpc_id], value
+                )
+        yield from families.values()
 
 
-def serve(metrics_factory: Callable[[], VPCMetrics], port: int = 8000):
+def serve(metrics_factory: Callable[[], list[VPCMetrics]], port: int = 8000):
     print(f"Starting up Exporter at port {port}")
     REGISTRY.register(VPCCollector(metrics_factory))
     _, thread = start_http_server(port)

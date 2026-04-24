@@ -25,8 +25,8 @@ def main() -> None:
         raw = json.loads((tests_dir / "deployment-by-id.json").read_text())
         properties = raw["content"][0]["properties"]
 
-        def _metrics_factory() -> VPCMetrics:
-            return VPCMetrics.from_properties(properties)
+        def _metrics_factory() -> list[VPCMetrics]:
+            return VPCMetrics.from_properties([properties])
     else:
         if not args.hostname:
             __exit_error(
@@ -40,17 +40,13 @@ def main() -> None:
             __exit_error(
                 "Password is required (use -p/--password or set ARIA_PASSWORD)"
             )
-        if not args.deployment:
-            __exit_error(
-                "Deployment name is required in live mode (use -d/--deployment)"
-            )
 
         session = AriaSession(args.hostname, args.username, args.password)
         api = AriaDeploymentAPI(session)
 
-        def _metrics_factory() -> VPCMetrics:
+        def _metrics_factory() -> list[VPCMetrics]:
             deployments = api.getDeploymentByType()
-            props = deployments[0]["content"][0]["properties"]
+            props = [d["content"][0]["properties"] for d in deployments]
             return VPCMetrics.from_properties(props)
 
     serve(_metrics_factory, args.serve_port)
