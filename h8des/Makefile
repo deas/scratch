@@ -1,8 +1,8 @@
 .PHONY: install install-dev clean check format test build build-bin build-oci pin-deps help preflight
 
 TAG=h8des
-IMAGE_BUILDER=docker
-BUILD_ARGS=--build-arg BASE_IMAGE_TAG=latest
+IMAGE_BUILDER=podman
+BUILD_ARGS=--build-arg BASE_IMAGE_TAG=python3.12-bookworm-slim
 
 ## Install for production
 install:
