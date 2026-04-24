@@ -4,10 +4,11 @@
 import json
 from argparse import ArgumentParser, Namespace  # , FileType
 from os import environ
+from pathlib import Path
 from sys import exit, stderr
 
 # from h8des.aria.session import AriaSession
-from h8des.prom.vpc_export import serve
+from h8des.prom.vpc_export import VPCMetrics, serve
 
 
 def main() -> None:
@@ -25,7 +26,13 @@ def main() -> None:
     #         "Could not login to '%s' with user '%s'"
     #         % (args["hostname"], args["username"])
     #     )
-    serve({}, 8001)
+
+    # Load test deployment data from JSON file
+    tests_dir = Path(__file__).parent.parent / "tests"
+    raw = json.loads((tests_dir / "deployment-by-id.json").read_text())
+    properties = raw["content"][0]["properties"]
+    metrics = VPCMetrics.from_properties(properties)
+    serve(metrics, 8001)
 
 
 def __load_args() -> Namespace:
