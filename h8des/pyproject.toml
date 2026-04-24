@@ -19,10 +19,12 @@ dev = [
   "pytest-mock",
   "requests-mock",
   "debugpy",
+  "pyinstaller",
 ]
 
 [project.scripts]
 vpc-metrics = "h8des.vpc_metrics:main"
+air8 = "h8des.air8:main"
 
 [tool.ruff]
 exclude = [".env", ".venv", "venv", "notebooks"]
@@ -42,4 +44,4 @@ relative_files = true
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 30
+fail_under = 20

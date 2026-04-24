@@ -6,13 +6,17 @@ from argparse import ArgumentParser, Namespace  # , FileType
 from os import environ
 from sys import exit, stderr
 
-# from h8des.aria.session import AriaSession
-from h8des.prom.vpc_export import serve
+from h8des.aria.deployment import AriaDeploymentAPI
+from h8des.aria.exceptions import (
+    DeploymentNotFoundException,
+    RestRequestException,
+)
+from h8des.aria.session import AriaSession
 
 
 def main() -> None:
     """ """
-    # args = __load_args()
+    args = __load_args()
 
     # session: AriaSession | None = None
 
@@ -25,23 +29,53 @@ def main() -> None:
     #         "Could not login to '%s' with user '%s'"
     #         % (args["hostname"], args["username"])
     #     )
-    serve({}, 8001)
+
+    try:
+        if args.action == "access_token":
+            __action_show_token(
+                AriaSession(args.hostname, args.username, args.password)
+            )
+        elif args.action == "deployment":
+            __action_getDeployment(
+                AriaSession(args.hostname, args.username, args.password),
+                args.project,
+            )
+    except RestRequestException as e:
+        __exit_error(
+            "API Request failed with HTTP/%s and message '%s'"
+            % (e.status_code, e.value)
+        )
+
+
+def __action_show_token(session: AriaSession) -> None:
+    __exit_okay(session.token)
+
+
+def __action_getDeployment(
+    session: AriaSession, deployment: str, resources: bool = True
+) -> None:
+    deploymentApi = AriaDeploymentAPI(session)
+
+    try:
+        __exit_okay(deploymentApi.getDeploymentByName(deployment, resources))
+    except DeploymentNotFoundException as _:
+        __exit_error("Deployment '%s' was not found" % deployment)
+
+
+def __exit_error(msg: str) -> None:
+    print(json.dumps({"error": msg}, indent=4), file=stderr)
+    exit(1)
+
+
+def __exit_okay(out: dict) -> None:
+    print(json.dumps(out, indent=4))
+    exit(0)
 
 
 def __load_args() -> Namespace:
     parser = ArgumentParser(
         description="This tool connects to VMware Aria and allows you to order and manage deployments",
         epilog="The Aria Client is developed and maintained by the HADES team.",
-    )
-    parser.add_argument(
-        "-p",
-        "--port",
-        dest="port",
-        help="Port, defaults to env.SRV_PORT",
-        metavar="SRV_PORT",
-        default=environ.get("SRV_PORT"),
-        required=(environ.get("SRV_PORT") is None),
-        type=int,
     )
     parser.add_argument(
         "-H",
@@ -83,16 +117,16 @@ def __load_args() -> Namespace:
         required=False,
         type=str,
     )
-    # parser.add_argument(
-    #     "-a",
-    #     "--action",
-    #     dest="action",
-    #     help="Action to execute [access_token, deployment, serve]",
-    #     metavar="ACTION",
-    #     required=True,
-    #     type=str,
-    #     choices=["access_token", "deployment", "serve"],
-    # )
+    parser.add_argument(
+        "-a",
+        "--action",
+        dest="action",
+        help="Action to execute [access_token, deployment, serve]",
+        metavar="ACTION",
+        required=True,
+        type=str,
+        choices=["access_token", "deployment", "serve"],
+    )
     parser.add_argument(
         "-d",
         "--deployment",
@@ -108,20 +142,13 @@ def __load_args() -> Namespace:
     # check args
     if args.action in ["create", "getProject"]:
         if not args.project:
-            pass
+            __exit_error(
+                "Argument 'project' is needed, when action=%s was selected"
+                % args.action
+            )
     # if args.action in ["create", "update"]:
 
     return args
-
-
-def __exit_error(msg: str) -> None:
-    print(json.dumps({"error": msg}, indent=4), file=stderr)
-    exit(1)
-
-
-def __exit_okay(out: dict) -> None:
-    print(json.dumps(out, indent=4))
-    exit(0)
 
 
 if __name__ == "__main__":

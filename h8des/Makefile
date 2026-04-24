@@ -1,6 +1,7 @@
-.PHONY: install install-dev clean check format test api build docker preflight
+.PHONY: install install-dev clean check format test build build-bin build-oci pin-deps help preflight
 
 TAG=h8des
+IMAGE_BUILDER=docker
 BUILD_ARGS=--build-arg BASE_IMAGE_TAG=latest
 
 ## Install for production
@@ -41,10 +42,9 @@ test:
 ## Run all preflight checks
 preflight: check test
 
-# ## Run api
-# api:
-# 	@.venv/bin/python -m uvicorn src.infra_n00b.api.main:app --reload
-
+## Build standalone executable using pyinstaller
+build-bin:
+	@.venv/bin/pyinstaller --onefile --name vpc-metrics h8des/vpc_metrics.py
 
 ## Build using pip-tools
 build:
@@ -55,13 +55,13 @@ build:
 
 ## Build the docker image
 build-oci:
-	podman build $(BUILD_ARGS) -t $(TAG) .
+	$(IMAGE_BUILDER) build $(BUILD_ARGS) -t $(TAG) .
 #-f Dockerfile -t h8des .
 
 ## Pin dependencies
 pin-deps:
 	pip-compile --generate-hashes --output-file=requirements.txt pyproject.toml
-	pip-compile --generate-hashes --extra=dev --output-file=requirements-dev.txt pyproject.toml	
+	pip-compile --generate-hashes --extra=dev --output-file=requirements-dev.txt pyproject.toml
 
 #################################################################################
 # Self Documenting Commands                                                     #
