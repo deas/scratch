@@ -23,7 +23,7 @@ def load_json(filename):
 
 def test_get_deployment_by_type(session):
     refresh_token = load_json("refresh-token.json")
-    deployment_by_name = load_json("deployment-by-name.json")
+    deployment_by_type = load_json("deployment-by-type.json")
     deployment_by_id = load_json("deployment-by-id.json")
 
     with requests_mock.Mocker() as m:
@@ -37,7 +37,11 @@ def test_get_deployment_by_type(session):
         )
         m.get(
             "https://example.com/deployment/api/deployments?resourceType=Custom.vpc",
-            json=deployment_by_name,
+            json=deployment_by_type,
+        )
+        m.get(
+            "https://example.com/deployment/api/deployments/7b6fa433/resources",
+            json=deployment_by_id,
         )
         m.get(
             "https://example.com/deployment/api/deployments/c6795882/resources",
@@ -47,7 +51,7 @@ def test_get_deployment_by_type(session):
         api = AriaDeploymentAPI(session)
         result = api.getDeploymentByType()
 
-    assert result == [deployment_by_id]
+    assert result == [deployment_by_id, deployment_by_id]
 
 
 def test_get_deployment_by_type_not_found(session):
@@ -75,7 +79,7 @@ def test_get_deployment_by_type_not_found(session):
 
 def test_get_deployment_by_type_no_resources(session):
     refresh_token = load_json("refresh-token.json")
-    deployment_by_name = load_json("deployment-by-name.json")
+    deployment_by_type = load_json("deployment-by-type.json")
 
     with requests_mock.Mocker() as m:
         m.post(
@@ -88,10 +92,10 @@ def test_get_deployment_by_type_no_resources(session):
         )
         m.get(
             "https://example.com/deployment/api/deployments?resourceType=Custom.vpc",
-            json=deployment_by_name,
+            json=deployment_by_type,
         )
 
         api = AriaDeploymentAPI(session)
         result = api.getDeploymentByType(resources=False)
 
-    assert result == deployment_by_name["content"]
+    assert result == deployment_by_type["content"]
