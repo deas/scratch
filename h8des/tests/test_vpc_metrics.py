@@ -89,10 +89,11 @@ class TestMain:
             serve_port=8001,
             deployment="test",
         )
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-        assert exc_info.value.code == 1
-        mock_serve.assert_not_called()
+        main()
+        mock_serve.assert_called_once()
+        factory = mock_serve.call_args[0][0]
+        with pytest.raises(LoginException):
+            factory()
 
     @patch("h8des.vpc_metrics.serve")
     @patch("h8des.vpc_metrics.__load_args")

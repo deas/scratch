@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 import requests
 
@@ -7,22 +8,31 @@ from .exceptions import LoginException, RestRequestException
 
 class AriaSession:
     def __init__(self, hostname: str, username: str, password: str) -> None:
-        """Initializes an authorized REST session with Aria
+        """Initializes a REST session with Aria (lazy authentication).
 
         Args:
             hostname (str): FQDN of Aria
             username (str): username to connect with
             password (str): password of user
-        Raises:
-            LoginException: when login was not successful
         """
         self.headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
         self.hostname = hostname
+        self._username = username
+        self._password = password
+        self._token_acquired_at = None
 
-        self.__authenticate(username, password)
+    def _ensure_authenticated(self) -> None:
+        """Authenticate if not already authenticated or token has expired."""
+        now = datetime.now(timezone.utc)
+        if (
+            self._token_acquired_at is None
+            or (now - self._token_acquired_at).total_seconds() >= 28800
+        ):
+            self.__authenticate(self._username, self._password)
+            self._token_acquired_at = now
 
     def __authenticate(self, username: str, password: str) -> None:
         """Authenticate to Aria REST API
@@ -69,7 +79,6 @@ class AriaSession:
                 % (r.status_code, r.text)
             )
         self.token = r.json()
-        # token = r.json()
 
         # update header
         self.headers["Authorization"] = "%s %s" % (
@@ -88,6 +97,7 @@ class AriaSession:
         Raises:
             RestRequestException: raised when status code above 299
         """
+        self._ensure_authenticated()
         url = "https://%s/%s" % (self.hostname, uri)
         if params:
             url = "%s?%s" % (
@@ -111,6 +121,7 @@ class AriaSession:
         Raises:
             RestRequestException: raised when status code above 299
         """
+        self._ensure_authenticated()
         url = "https://%s/%s" % (self.hostname, uri)
 
         r = requests.post(
@@ -133,6 +144,7 @@ class AriaSession:
         Raises:
             RestRequestException: raised when status code above 299
         """
+        self._ensure_authenticated()
         url = "https://%s/%s" % (self.hostname, uri)
 
         r = requests.delete(url=url, headers=self.headers, verify=False)

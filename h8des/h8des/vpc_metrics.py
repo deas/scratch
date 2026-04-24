@@ -7,7 +7,6 @@ from pathlib import Path
 from sys import exit, stderr
 
 from h8des.aria.deployment import AriaDeploymentAPI
-from h8des.aria.exceptions import LoginException
 from h8des.aria.session import AriaSession
 from h8des.prom.vpc_export import VPCMetrics, serve
 
@@ -46,14 +45,7 @@ def main() -> None:
                 "Deployment name is required in live mode (use -d/--deployment)"
             )
 
-        try:
-            session = AriaSession(args.hostname, args.username, args.password)
-        except LoginException:
-            __exit_error(
-                "Could not login to '%s' with user '%s'"
-                % (args.hostname, args.username)
-            )
-
+        session = AriaSession(args.hostname, args.username, args.password)
         api = AriaDeploymentAPI(session)
 
         def _metrics_factory() -> VPCMetrics:

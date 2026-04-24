@@ -9,6 +9,7 @@ from sys import exit, stderr
 from h8des.aria.deployment import AriaDeploymentAPI
 from h8des.aria.exceptions import (
     DeploymentNotFoundException,
+    LoginException,
     RestRequestException,
 )
 from h8des.aria.session import AriaSession
@@ -40,6 +41,11 @@ def main() -> None:
                 AriaSession(args.hostname, args.username, args.password),
                 args.project,
             )
+    except LoginException:
+        __exit_error(
+            "Could not login to '%s' with user '%s'"
+            % (args.hostname, args.username)
+        )
     except RestRequestException as e:
         __exit_error(
             "API Request failed with HTTP/%s and message '%s'"
