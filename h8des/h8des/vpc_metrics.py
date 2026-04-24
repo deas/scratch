@@ -1,38 +1,84 @@
 # -*- coding: utf-8 -*-
 
-# from time import sleep
 import json
-from argparse import ArgumentParser, Namespace  # , FileType
+from argparse import ArgumentParser, Namespace
 from os import environ
 from pathlib import Path
 from sys import exit, stderr
 
-# from h8des.aria.session import AriaSession
+from h8des.aria.deployment import AriaDeploymentAPI
+from h8des.aria.exceptions import DeploymentNotFoundException, LoginException
+from h8des.aria.session import AriaSession
 from h8des.prom.vpc_export import VPCMetrics, serve
 
 
+def fetch_vpc_metrics(
+    api: AriaDeploymentAPI, deployment_name: str
+) -> VPCMetrics:
+    """Fetch VPC metrics from a live Aria deployment.
+
+    Args:
+        api: An initialized AriaDeploymentAPI instance.
+        deployment_name: The name of the deployment to look up.
+
+    Returns:
+        VPCMetrics populated from the deployment properties.
+
+    Raises:
+        DeploymentNotFoundException: If the deployment is not found.
+    """
+    deployment = api.getDeploymentByName(deployment_name)
+    properties = deployment["content"][0]["properties"]
+    return VPCMetrics.from_properties(properties)
+
+
 def main() -> None:
-    """ """
-    # args = __load_args()
+    """Entry point for the VPC metrics exporter."""
+    args = __load_args()
 
-    # session: AriaSession | None = None
+    if args.serve_port is None:
+        __exit_error(
+            "Port is required (use -s/--serve-port or set SERVE_PORT)"
+        )
 
-    # try:
-    #     session = AriaSession(
-    #         args["hostname"], args["username"], args["password"]
-    #     )
-    # except LoginException:
-    #     __exit_error(
-    #         "Could not login to '%s' with user '%s'"
-    #         % (args["hostname"], args["username"])
-    #     )
+    if args.hostname == "mock":
+        tests_dir = Path(__file__).parent.parent / "tests"
+        raw = json.loads((tests_dir / "deployment-by-id.json").read_text())
+        properties = raw["content"][0]["properties"]
+        metrics = VPCMetrics.from_properties(properties)
+    else:
+        if not args.hostname:
+            __exit_error(
+                "Hostname is required (use -H/--hostname or set ARIA_HOSTNAME)"
+            )
+        if not args.username:
+            __exit_error(
+                "Username is required (use -u/--username or set ARIA_USERNAME)"
+            )
+        if not args.password:
+            __exit_error(
+                "Password is required (use -p/--password or set ARIA_PASSWORD)"
+            )
+        if not args.deployment:
+            __exit_error(
+                "Deployment name is required in live mode (use -d/--deployment)"
+            )
 
-    # Load test deployment data from JSON file
-    tests_dir = Path(__file__).parent.parent / "tests"
-    raw = json.loads((tests_dir / "deployment-by-id.json").read_text())
-    properties = raw["content"][0]["properties"]
-    metrics = VPCMetrics.from_properties(properties)
-    serve(metrics, 8001)
+        try:
+            session = AriaSession(args.hostname, args.username, args.password)
+        except LoginException:
+            __exit_error(
+                "Could not login to '%s' with user '%s'"
+                % (args.hostname, args.username)
+            )
+
+        api = AriaDeploymentAPI(session)
+        try:
+            metrics = fetch_vpc_metrics(api, args.deployment)
+        except DeploymentNotFoundException:
+            __exit_error("Deployment '%s' was not found" % args.deployment)
+
+    serve(metrics, args.serve_port)
 
 
 def __load_args() -> Namespace:
@@ -41,23 +87,21 @@ def __load_args() -> Namespace:
         epilog="The Aria Client is developed and maintained by the HADES team.",
     )
     parser.add_argument(
-        "-p",
-        "--port",
-        dest="port",
-        help="Port, defaults to env.SRV_PORT",
-        metavar="SRV_PORT",
-        default=environ.get("SRV_PORT"),
-        required=(environ.get("SRV_PORT") is None),
+        "-s",
+        "--serve-port",
+        dest="serve_port",
+        help="Port, defaults to env.SERVE_PORT",
+        metavar="SERVE_PORT",
+        default=environ.get("SERVE_PORT"),
         type=int,
     )
     parser.add_argument(
         "-H",
         "--hostname",
         dest="hostname",
-        help="Aria hostname, defaults to env.ARIA_HOSTNAME",
+        help="Aria hostname, defaults to env.ARIA_HOSTNAME. Use MOCK for static test data.",
         metavar="ARIA_HOSTNAME",
         default=environ.get("ARIA_HOSTNAME"),
-        required=(environ.get("ARIA_HOSTNAME") is None),
         type=str,
     )
     parser.add_argument(
@@ -67,7 +111,6 @@ def __load_args() -> Namespace:
         help="Aria username, defaults to env.ARIA_USERNAME",
         metavar="ARIA_USERNAME",
         default=environ.get("ARIA_USERNAME"),
-        required=(environ.get("ARIA_USERNAME") is None),
         type=str,
     )
     parser.add_argument(
@@ -77,48 +120,27 @@ def __load_args() -> Namespace:
         help="Aria password, defaults to env.ARIA_PASSWORD",
         metavar="ARIA_PASSWORD",
         default=environ.get("ARIA_PASSWORD"),
-        required=(environ.get("ARIA_PASSWORD") is None),
         type=str,
     )
     parser.add_argument(
         "-P",
         "--project",
         dest="project",
-        help="Aria project, required when action=create, defaults to env.ARIA_PROJECT",
+        help="Aria project, defaults to env.ARIA_PROJECT",
         metavar="ARIA_PROJECT",
         default=environ.get("ARIA_PROJECT"),
-        required=False,
         type=str,
     )
-    # parser.add_argument(
-    #     "-a",
-    #     "--action",
-    #     dest="action",
-    #     help="Action to execute [access_token, deployment, serve]",
-    #     metavar="ACTION",
-    #     required=True,
-    #     type=str,
-    #     choices=["access_token", "deployment", "serve"],
-    # )
     parser.add_argument(
         "-d",
         "--deployment",
         dest="deployment",
-        help="Name of Deyployment",
+        help="Name of Deployment",
         metavar="DEPLOYMENT",
-        # required=True,
         type=str,
     )
 
-    args = parser.parse_args()
-
-    # check args
-    if args.action in ["create", "getProject"]:
-        if not args.project:
-            pass
-    # if args.action in ["create", "update"]:
-
-    return args
+    return parser.parse_args()
 
 
 def __exit_error(msg: str) -> None:
