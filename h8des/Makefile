@@ -1,5 +1,8 @@
 .PHONY: install install-dev clean check format test api build docker preflight
 
+TAG=h8des
+BUILD_ARGS=--build-arg BASE_IMAGE_TAG=latest
+
 ## Install for production
 install:
 	@echo ">> Installing dependencies"
@@ -51,8 +54,9 @@ build:
 	@uv pip compile pyproject.toml --extra dev -o requirements-dev.txt
 
 ## Build the docker image
-docker:
-	docker build -f Dockerfile -t h8des .
+build-oci:
+	podman build $(BUILD_ARGS) -t $(TAG) .
+#-f Dockerfile -t h8des .
 
 ## Pin dependencies
 pin-deps:
