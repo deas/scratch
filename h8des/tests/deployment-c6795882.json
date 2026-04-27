@@ -38,7 +38,7 @@
         "netNamespaceSubnetPrefix": 29,
         "vpc": {
           "id": "some-id",
-          "name": "vpc-name",
+          "name": "vpc-name 002",
           "type": "VPC",
           "@type": "CloudOnboarding.VPC",
           "vpcId": "vpc-id",

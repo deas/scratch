@@ -22,11 +22,15 @@ def main() -> None:
 
     if args.hostname == "mock":
         tests_dir = Path(__file__).parent.parent / "tests"
-        raw = json.loads((tests_dir / "deployment-c6795882.json").read_text())
-        properties = raw["content"][0]["properties"]
+        index = json.loads((tests_dir / "deployment-by-type.json").read_text())
+        deployment_ids = [d["id"] for d in index["content"]]
+        props = [
+            json.loads((tests_dir / f"deployment-{did}.json").read_text())["content"][0]["properties"]
+            for did in deployment_ids
+        ]
 
         def _metrics_factory() -> list[VPCMetrics]:
-            return VPCMetrics.from_properties([properties])
+            return VPCMetrics.from_properties(props)
     else:
         if not args.hostname:
             __exit_error(
