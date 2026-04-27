@@ -14,7 +14,7 @@ def load_json(filename):
 
 @pytest.fixture
 def sample_properties():
-    raw = load_json("deployment-by-id.json")
+    raw = load_json("deployment-c6795882.json")
     return raw["content"][0]["properties"]
 
 

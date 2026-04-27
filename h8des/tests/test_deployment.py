@@ -24,7 +24,7 @@ def load_json(filename):
 def test_get_deployment_by_type(session):
     refresh_token = load_json("refresh-token.json")
     deployment_by_type = load_json("deployment-by-type.json")
-    deployment_by_id = load_json("deployment-by-id.json")
+    deployment_by_id = load_json("deployment-c6795882.json")
 
     with requests_mock.Mocker() as m:
         m.post(

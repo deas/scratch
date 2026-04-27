@@ -18,7 +18,7 @@ def load_json(filename):
 
 @pytest.fixture
 def deployment_by_id():
-    return load_json("deployment-by-id.json")
+    return load_json("deployment-c6795882.json")
 
 
 class TestMain:
