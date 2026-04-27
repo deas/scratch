@@ -1,5 +1,3 @@
-import json
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,23 +7,12 @@ from h8des.aria.session import AriaSession
 from h8des.prom.vpc_export import VPCMetrics
 from h8des.vpc_metrics import main
 
-TESTS_DIR = Path(__file__).parent
-
-
-def load_json(filename):
-    return json.loads((TESTS_DIR / filename).read_text())
-
-
-@pytest.fixture
-def deployment_by_id():
-    return load_json("deployment-c6795882.json")
-
 
 class TestMain:
     @patch("h8des.vpc_metrics.serve")
     @patch("h8des.vpc_metrics.__load_args")
     def test_mock_mode_loads_static_data(
-        self, mock_load_args, mock_serve, deployment_by_id
+        self, mock_load_args, mock_serve
     ):
         mock_load_args.return_value = MagicMock(
             hostname="mock",
@@ -97,7 +84,7 @@ class TestMain:
         factory = mock_serve.call_args[0][0]
         with patch(
             "h8des.vpc_metrics.AriaDeploymentAPI.getDeploymentByType",
-            return_value=[deployment_by_id],
+            return_value=[deployment_by_id("c6795882")],
         ):
             metrics = factory()
         assert isinstance(metrics, list)

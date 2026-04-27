@@ -1,21 +1,4 @@
-import json
-from pathlib import Path
-
-import pytest
-
 from h8des.prom.vpc_export import VPCCollector, VPCMetrics
-
-TESTS_DIR = Path(__file__).parent
-
-
-def load_json(filename):
-    return json.loads((TESTS_DIR / filename).read_text())
-
-
-@pytest.fixture
-def sample_properties():
-    raw = load_json("deployment-c6795882.json")
-    return raw["content"][0]["properties"]
 
 
 class TestVPCMetrics:
