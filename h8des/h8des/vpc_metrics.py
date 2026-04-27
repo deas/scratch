@@ -22,7 +22,7 @@ def main() -> None:
 
     if args.hostname == "mock":
         tests_dir = Path(__file__).parent.parent / "tests"
-        raw = json.loads((tests_dir / "deployment-by-id.json").read_text())
+        raw = json.loads((tests_dir / "deployment-c6795882.json").read_text())
         properties = raw["content"][0]["properties"]
 
         def _metrics_factory() -> list[VPCMetrics]:

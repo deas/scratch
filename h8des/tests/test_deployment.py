@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from unittest.mock import patch
 
@@ -9,6 +10,10 @@ from h8des.aria.deployment import AriaDeploymentAPI
 from h8des.aria.session import AriaSession
 
 TESTS_DIR = Path(__file__).parent
+
+DEPLOYMENT_RESOURCES_URL = re.compile(
+    r"https://example\.com/deployment/api/deployments/(?P<id>[^/]+)/resources$"
+)
 
 
 @pytest.fixture
@@ -21,10 +26,14 @@ def load_json(filename):
     return json.loads((TESTS_DIR / filename).read_text())
 
 
+def deployment_by_id_response(request, context):
+    match = DEPLOYMENT_RESOURCES_URL.match(request.url)
+    return load_json(f"deployment-{match.group('id')}.json")
+
+
 def test_get_deployment_by_type(session):
     refresh_token = load_json("refresh-token.json")
     deployment_by_type = load_json("deployment-by-type.json")
-    deployment_by_id = load_json("deployment-c6795882.json")
 
     with requests_mock.Mocker() as m:
         m.post(
@@ -39,19 +48,15 @@ def test_get_deployment_by_type(session):
             "https://example.com/deployment/api/deployments?resourceType=Custom.vpc",
             json=deployment_by_type,
         )
-        m.get(
-            "https://example.com/deployment/api/deployments/7b6fa433/resources",
-            json=deployment_by_id,
-        )
-        m.get(
-            "https://example.com/deployment/api/deployments/c6795882/resources",
-            json=deployment_by_id,
-        )
+        m.get(DEPLOYMENT_RESOURCES_URL, json=deployment_by_id_response)
 
         api = AriaDeploymentAPI(session)
         result = api.getDeploymentByType()
 
-    assert result == [deployment_by_id, deployment_by_id]
+    assert result == [
+        load_json("deployment-7b6fa433.json"),
+        load_json("deployment-c6795882.json"),
+    ]
 
 
 def test_get_deployment_by_type_not_found(session):
