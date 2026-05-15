@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CLUSTER_NAME="${CLUSTER_NAME:-h4des}"
+RELEASE_NAME="${RELEASE_NAME:-kps}"
+NAMESPACE="${NAMESPACE:-monitoring}"
+VALUES_FILE="${VALUES_FILE:-${SCRIPT_DIR}/values-kps.yaml}"
+CHART_VERSION="${CHART_VERSION:-}"
+
+GRAFANA_RELEASE_NAME="${GRAFANA_RELEASE_NAME:-grafana-operator}"
+GRAFANA_NAMESPACE="${GRAFANA_NAMESPACE:-grafana}"
+GRAFANA_VALUES_FILE="${GRAFANA_VALUES_FILE:-${SCRIPT_DIR}/values-grafana-operator.yaml}"
+GRAFANA_CHART_VERSION="${GRAFANA_CHART_VERSION:-}"
+GRAFANA_CHART_REF="${GRAFANA_CHART_REF:-oci://ghcr.io/grafana/helm-charts/grafana-operator}"
+
+for cmd in kind kubectl helm; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "missing required tool: $cmd" >&2
+    exit 1
+  }
+done
+
+[[ -f "$VALUES_FILE" ]] || {
+  echo "values file not found: $VALUES_FILE" >&2
+  exit 1
+}
+[[ -f "$GRAFANA_VALUES_FILE" ]] || {
+  echo "values file not found: $GRAFANA_VALUES_FILE" >&2
+  exit 1
+}
+
+if kind get clusters | grep -qx "$CLUSTER_NAME"; then
+  echo "kind cluster '$CLUSTER_NAME' already exists"
+else
+  echo "creating kind cluster '$CLUSTER_NAME'"
+  kind create cluster --name "$CLUSTER_NAME" --wait 120s
+fi
+
+kubectl config use-context "kind-${CLUSTER_NAME}" >/dev/null
+
+if ! helm repo list -o yaml 2>/dev/null | grep -q '^- name: prometheus-community$'; then
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+fi
+helm repo update prometheus-community >/dev/null
+
+kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$NAMESPACE"
+
+VERSION_ARG=()
+[[ -n "$CHART_VERSION" ]] && VERSION_ARG=(--version "$CHART_VERSION")
+
+helm upgrade --install "$RELEASE_NAME" prometheus-community/kube-prometheus-stack \
+  --namespace "$NAMESPACE" \
+  "${VERSION_ARG[@]}" \
+  -f "$VALUES_FILE" \
+  --wait
+
+kubectl get namespace "$GRAFANA_NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$GRAFANA_NAMESPACE"
+
+GRAFANA_VERSION_ARG=()
+[[ -n "$GRAFANA_CHART_VERSION" ]] && GRAFANA_VERSION_ARG=(--version "$GRAFANA_CHART_VERSION")
+
+helm upgrade --install "$GRAFANA_RELEASE_NAME" "$GRAFANA_CHART_REF" \
+  --namespace "$GRAFANA_NAMESPACE" \
+  "${GRAFANA_VERSION_ARG[@]}" \
+  -f "$GRAFANA_VALUES_FILE" \
+  --wait
+
+echo "done. prometheus-operator in '$NAMESPACE', grafana-operator in '$GRAFANA_NAMESPACE'."
