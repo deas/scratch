@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 CLUSTER_NAME="${CLUSTER_NAME:-h4des}"
 RELEASE_NAME="${RELEASE_NAME:-kps}"
 NAMESPACE="${NAMESPACE:-monitoring}"
-VALUES_FILE="${VALUES_FILE:-${SCRIPT_DIR}/values-kps.yaml}"
 CHART_VERSION="${CHART_VERSION:-}"
 
 GRAFANA_RELEASE_NAME="${GRAFANA_RELEASE_NAME:-grafana-operator}"
 GRAFANA_NAMESPACE="${GRAFANA_NAMESPACE:-grafana}"
-GRAFANA_VALUES_FILE="${GRAFANA_VALUES_FILE:-${SCRIPT_DIR}/values-grafana-operator.yaml}"
 GRAFANA_CHART_VERSION="${GRAFANA_CHART_VERSION:-}"
 GRAFANA_CHART_REF="${GRAFANA_CHART_REF:-oci://ghcr.io/grafana/helm-charts/grafana-operator}"
 
@@ -21,15 +17,6 @@ for cmd in kind kubectl helm; do
     exit 1
   }
 done
-
-[[ -f "$VALUES_FILE" ]] || {
-  echo "values file not found: $VALUES_FILE" >&2
-  exit 1
-}
-[[ -f "$GRAFANA_VALUES_FILE" ]] || {
-  echo "values file not found: $GRAFANA_VALUES_FILE" >&2
-  exit 1
-}
 
 if kind get clusters | grep -qx "$CLUSTER_NAME"; then
   echo "kind cluster '$CLUSTER_NAME' already exists"
@@ -53,8 +40,54 @@ VERSION_ARG=()
 helm upgrade --install "$RELEASE_NAME" prometheus-community/kube-prometheus-stack \
   --namespace "$NAMESPACE" \
   "${VERSION_ARG[@]}" \
-  -f "$VALUES_FILE" \
-  --wait
+  -f - \
+  --wait <<'YAML'
+crds:
+  enabled: true
+
+defaultRules:
+  create: false
+
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: false
+
+prometheus:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
+kubeApiServer:
+  enabled: false
+kubelet:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+prometheusOperator:
+  admissionWebhooks:
+    enabled: false
+  tls:
+    enabled: false
+  serviceMonitor:
+    selfMonitor: false
+YAML
 
 kubectl get namespace "$GRAFANA_NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$GRAFANA_NAMESPACE"
 
@@ -64,7 +97,12 @@ GRAFANA_VERSION_ARG=()
 helm upgrade --install "$GRAFANA_RELEASE_NAME" "$GRAFANA_CHART_REF" \
   --namespace "$GRAFANA_NAMESPACE" \
   "${GRAFANA_VERSION_ARG[@]}" \
-  -f "$GRAFANA_VALUES_FILE" \
-  --wait
+  -f - \
+  --wait <<'YAML'
+installCRDs: true
+
+serviceMonitor:
+  enabled: false
+YAML
 
 echo "done. prometheus-operator in '$NAMESPACE', grafana-operator in '$GRAFANA_NAMESPACE'."
