@@ -19,6 +19,16 @@ ECK_RELEASE_NAME="${ECK_RELEASE_NAME:-elastic-operator}"
 ECK_NAMESPACE="${ECK_NAMESPACE:-elastic-system}"
 ECK_CHART_VERSION="${ECK_CHART_VERSION:-}"
 
+INSTALL_TRAEFIK="${INSTALL_TRAEFIK:-yes}"
+TRAEFIK_RELEASE_NAME="${TRAEFIK_RELEASE_NAME:-traefik}"
+TRAEFIK_NAMESPACE="${TRAEFIK_NAMESPACE:-traefik}"
+TRAEFIK_CHART_VERSION="${TRAEFIK_CHART_VERSION:-}"
+
+# HTTP_HOST_PORT="${HTTP_HOST_PORT:-18080}"
+# HTTPS_HOST_PORT="${HTTPS_HOST_PORT:-18443}"
+HTTP_NODE_PORT="${HTTP_NODE_PORT:-30080}"
+HTTPS_NODE_PORT="${HTTPS_NODE_PORT:-30443}"
+
 for cmd in kind kubectl helm; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "missing required tool: $cmd" >&2
@@ -28,6 +38,7 @@ done
 
 if kind get clusters | grep -qx "$CLUSTER_NAME"; then
   echo "kind cluster '$CLUSTER_NAME' already exists"
+  echo "  note: extraPortMappings are fixed at creation; delete the cluster to change them"
 else
   echo "creating kind cluster '$CLUSTER_NAME'"
   kind create cluster --name "$CLUSTER_NAME" --wait 120s
@@ -142,6 +153,35 @@ if [[ "$INSTALL_ECK" == "yes" ]]; then
 YAML
 else
   echo "skipping eck-operator (INSTALL_ECK=$INSTALL_ECK)"
+fi
+
+if [[ "$INSTALL_TRAEFIK" == "yes" ]]; then
+  if ! helm repo list -o yaml 2>/dev/null | grep -q '^- name: traefik$'; then
+    helm repo add traefik https://traefik.github.io/charts
+  fi
+  helm repo update traefik >/dev/null
+
+  kubectl get namespace "$TRAEFIK_NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$TRAEFIK_NAMESPACE"
+
+  TRAEFIK_VERSION_ARG=()
+  [[ -n "$TRAEFIK_CHART_VERSION" ]] && TRAEFIK_VERSION_ARG=(--version "$TRAEFIK_CHART_VERSION")
+
+  helm upgrade --install "$TRAEFIK_RELEASE_NAME" traefik/traefik \
+    --namespace "$TRAEFIK_NAMESPACE" \
+    "${TRAEFIK_VERSION_ARG[@]}" \
+    -f - \
+    --wait <<YAML
+service:
+  spec:
+    type: NodePort
+ports:
+  web:
+    nodePort: ${HTTP_NODE_PORT}
+  websecure:
+    nodePort: ${HTTPS_NODE_PORT}
+YAML
+else
+  echo "skipping traefik (INSTALL_TRAEFIK=$INSTALL_TRAEFIK)"
 fi
 
 echo "done."
