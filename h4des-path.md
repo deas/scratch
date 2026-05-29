@@ -10,7 +10,7 @@ Output: Orientierung -> Speed/Stability
 
 ### Aspekte
 
-- Runners/CD/Prozesse (Runners/Artefakte)
+- CD/Prozesse (Runners/Artefakte)
 - Slice/Dice: Repos/Modules
 - Eigenschaften Repos? Purpose? Primitiven?
 - Testing (Pyramide)
@@ -21,7 +21,7 @@ Output: Orientierung -> Speed/Stability
 
 ### Design/Smaller Bits
 
-- Docs (Wiki/Markdown/LLMs)
+- Docs (Wiki/Markdown/LLMs/Medienbruch)
 - Observability
 - Upstream Charts
 - Kustomized Helm
@@ -29,6 +29,7 @@ Output: Orientierung -> Speed/Stability
 - AI
 - OpenCode
 - ArgoCD (Instanz Ownership)
+- Stage Propagation
 - Hetzner/GCA
 
 ## Random Personal Dumps
