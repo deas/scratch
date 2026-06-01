@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CLUSTER_NAME="${CLUSTER_NAME:-h4des}"
+CLUSTER_NAME="${CLUSTER_NAME:-hades}"
 
 INSTALL_KPS="${INSTALL_KPS:-yes}"
 KPS_RELEASE_NAME="${KPS_RELEASE_NAME:-kps}"
