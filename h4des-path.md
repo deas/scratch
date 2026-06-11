@@ -38,3 +38,29 @@ Output: Orientierung -> Speed/Stability
 - -> Design / Kleinere Dinge folgen
 - ~Eisberg~
 - Conway's Law
+
+## Golden Circle Testing
+
+why: ... or it will happen (stability -> siehe auch speed)
+
+- neue dev "stage"
+- pipeline inline scripts
+- kind in pipeline (vind)
+- bats (shell scripts/chart)
+- pytest
+- Pyramide/module -> Repo structures
+- kaos
+- promtestlint (format)
+- most common issues (IBM?)
+- (sysdig)drift detection/monitoring (blackbox)
+- value helmtest??
+- test reports toolchain?
+- bdd/tdd/generative/property
+- kuttl (operator focus?)
+- argocd-diff-preview
+
+- zurück ziehen aus common operators?
+- Sichtbarkeit branches
+- Solution slopped by spec
+- Cluster gar nicht sichtbar in git?
+- Propagation prozess?
