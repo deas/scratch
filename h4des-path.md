@@ -64,3 +64,4 @@ why: ... or it will happen (stability -> siehe auch speed)
 - Solution slopped by spec
 - Cluster gar nicht sichtbar in git?
 - Propagation prozess?
+- helm dance demo?
