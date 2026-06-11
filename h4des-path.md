@@ -69,3 +69,5 @@ why: ... or it will happen (stability -> siehe auch speed)
 - helm dance demo?
 - branch/folder mapping "dev": Uniform?
 - Wo werden state repos referenziert?
+- Sync waves?
+- Helm Aggregation "Workaround" (values Propagation from root)?
