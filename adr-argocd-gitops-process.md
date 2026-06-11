@@ -1,0 +1,53 @@
+# Architecture Decision Record : ArgoCD GitOps Process
+
+## Kontext
+
+Das Platform Team betreibt eine produktive Kubernetes Infrastruktur on Prem mit folgenden Eigenschaften:
+
+- Zwei Typen von Clustern: Admin und Customer
+- Genau ein Admin (Control Plane) Cluster
+- Etwa zwei Dutzend gleichförmige Customer Cluster
+- Clustern haben keinen Zugriff auf das Internet
+- Cluster haben Zugriff auf einen On Prem Gitlab Server welcher das GitOps Repository beherbergt
+- Primäre Funktion des Admin Clusters sind Observability Dienste (Prometheus, Grafana, Alertmanager, Elastic Stack) für Customer Cluster.
+
+## Constraints / Team Entscheidungen
+
+- Auf dem Admin Cluster werden keine Customer Workloads betrieben. Produktive Kundenprozesse hängen nicht davon ab.
+- Der Deployment Prozess wird implementiert mit ArgoCD und GitOps Prinzipien
+- Es besteht eine starke Präferenz für die Nutzung von Helm Charts (statt einfachen Manifesten und/oder kustomize)
+- Die GitOps Repository Ordnerstruktur ist vorgegeben als `applications/{common,admin,customer}`. Die Leaf Ordner reflektieren gemeinsame genutzte und jeweils exclusive Anwendungen.
+- ArgoCD wird mit einer Root Application gebootstrapped. Eine Gitlab Pipelines erzeugt und deployt sie. Die Root Applikation eines Clusters ist nicht Teil des Repositories.
+- Der Code im GitOps Repository enthält keine Deployment Informationen über Individuelle cluster. Der einzige Code welcher Rückschlüsse auf einzelne Customer Cluster zulässt sind Prometheus Scrape Konfigurationen des Control Clusters welche Endpunkte in Customer Clustern referenzieren.
+- Die Dateisystemstruktur erlaubt es insofern nicht, einzelne Customer Cluster anzusteuern.
+- ArgoCD läuft im Pull Betrieb auf allen Clustern.
+- In den Clustern deployte Application Helm Charts werden ausschließlich von einem Helm Repository oder einer OCI Registry bezogen (On Prem Nexus)
+- Helm Charts Quellcode wird gegen einen Öffentlichen Gitlab server entwickelt.
+- Eine Virtuelle On Prem Runner Maschine dient dem öffentlichen Gitlab Server zur Ausführung von Pipeline Prozessen auf Helm Chart Repositories.
+- Die On Prem Runner Maschine kann Helm Chart Releases auf den öffentlichen Gitlab Server erzeugen.
+- On Prem kann ein Bestellprozess für auf dem öffentlichen Gitlab Server releaste Helm Charts angestoßen werden welcher diese im On Prem Nexus zum Konsum durch die Cluster bereitstellt.
+- Änderungen an durch ArgoCD verwalteten Clustern wird in git Feature Branches entwickelt. Neben den Feature Branches existiert genau ein development branch.
+- Die Produktive Umgebung wird auschließlich durch den main branch abgebildet.
+- Es existieren dedizierte Cluster zum Testen von Deployments bevor Änderungen durch git merge auf main in Produktion propagiert wird.
+- Kubernetes Cluster dienen auschlißelich Produktion oder zu Testzwecken - niemals beiden Zwecken.
+- ArgoCD Applikationen aus dem GitOps Repository referenzieren weitere GitOps Repositories
+- Auf Test Deployments können aus mehreren Branches kommen.
+- Helm Releases können uneingeschränkt auf alternativer Infrastruktur (z.B. kind Clustern) betrieben und getestet werden
+- Im öffentlichen Gitlab Server werden Kopien (in der Regel keine Forks) von Third Party Upstream Helm Charts (z.B. Datenbank Operatoren) verwaltet. Diese durchlaufen den gleichen Release Prozess wie Eigenentwicklungen.
+
+## Unklar
+
+- Security: Kann die On Prem Runner Maschine den Bestellprozess für Helm Charts in Pipeline Prozessen anstoßen?
+
+## Konsequenzen und Risiken
+
+## Alternativen
+
+## Quellennachweis
+
+## Random
+
+- Nachfragen (insbesondere was unklar ist)
+- Prozess illustrieren
+- Kritiker! (Fallstricke)
+- Trade-Offs/Alternativen
