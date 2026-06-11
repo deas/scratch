@@ -38,6 +38,7 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Auf Test Deployments können aus mehreren Branches kommen.
 - Helm Releases können uneingeschränkt auf alternativer Infrastruktur (z.B. kind Clustern) betrieben und getestet werden
 - Im öffentlichen Gitlab Server werden Kopien (in der Regel keine Forks) von Third Party Upstream Helm Charts (z.B. Datenbank Operatoren) verwaltet. Diese durchlaufen den gleichen Release Prozess wie Eigenentwicklungen.
+- Secrets werden durch ExternalSecrets mit einem Vault ClusterSecretStore verwaltet.
 
 ## Unklar
 
