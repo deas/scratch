@@ -59,9 +59,13 @@ why: ... or it will happen (stability -> siehe auch speed)
 - kuttl (operator focus?)
 - argocd-diff-preview
 
+## Common Operators
+
 - zurück ziehen aus common operators?
 - Sichtbarkeit branches
 - Solution slopped by spec
 - Cluster gar nicht sichtbar in git?
 - Propagation prozess?
 - helm dance demo?
+- branch/folder mapping "dev": Uniform?
+- Wo werden state repos referenziert?
