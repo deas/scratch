@@ -10,6 +10,9 @@ Das Platform Team betreibt eine produktive Kubernetes Infrastruktur on Prem mit 
 - Clustern haben keinen Zugriff auf das Internet
 - Cluster haben Zugriff auf einen On Prem Gitlab Server welcher das GitOps Repository beherbergt
 - Primäre Funktion des Admin Clusters sind Observability Dienste (Prometheus, Grafana, Alertmanager, Elastic Stack) für Customer Cluster.
+- Kubernetes Cluster und das ArgoCD Deployment selbst wird dem Platform Team durch ein Infrastruktur Team bereitgestellt und betrieben.
+
+Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 
 ## Constraints / Team Entscheidungen
 
