@@ -18,6 +18,7 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 
 - Auf dem Admin Cluster werden keine Customer Workloads betrieben. Produktive Kundenprozesse hängen nicht davon ab.
 - Der Deployment Prozess wird implementiert mit ArgoCD und GitOps Prinzipien
+- ArgoCD Applikationen auf Produktion werden auschließlich im Auto-Sync Module betrieben.
 - Es besteht eine starke Präferenz für die Nutzung von Helm Charts (statt einfachen Manifesten und/oder kustomize)
 - Die GitOps Repository Ordnerstruktur ist vorgegeben als `applications/{common,admin,customer}`. Die Leaf Ordner reflektieren gemeinsame genutzte und jeweils exclusive Anwendungen.
 - ArgoCD wird mit einer Root Application gebootstrapped. Eine Gitlab Pipelines erzeugt und deployt sie. Die Root Applikation eines Clusters ist nicht Teil des Repositories. Die Typ des Clusters ist Parameter bei der Erzeugung der Root Application.
@@ -30,7 +31,7 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Die On Prem Runner Maschine kann Helm Chart Releases auf den öffentlichen Gitlab Server erzeugen.
 - On Prem kann ein Bestellprozess für auf dem öffentlichen Gitlab Server releaste Helm Charts angestoßen werden welcher diese im On Prem Nexus zum Konsum durch die Cluster bereitstellt.
 - Änderungen an durch ArgoCD verwalteten Clustern wird in git Feature Branches entwickelt. Neben den Feature Branches existiert genau ein development branch.
-- Die Produktive Umgebung wird auschließlich durch den main branch abgebildet.
+- Die Produktive Umgebung wird auschließlich durch den main Branch abgebildet. Commits auf main Branch sind ausschließlich merges aus dem development Branch.
 - Es existieren dedizierte Cluster zum Testen von Deployments bevor Änderungen durch git merge auf main in Produktion propagiert wird.
 - Kubernetes Cluster dienen auschlißelich Produktion oder zu Testzwecken - niemals beiden Zwecken.
 - ArgoCD Applikationen aus dem GitOps Repository referenzieren weitere GitOps Repositories
