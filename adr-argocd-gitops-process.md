@@ -39,6 +39,10 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Helm Releases können uneingeschränkt auf alternativer Infrastruktur (z.B. kind Clustern) betrieben und getestet werden
 - Im öffentlichen Gitlab Server werden Kopien (in der Regel keine Forks) von Third Party Upstream Helm Charts (z.B. Datenbank Operatoren) verwaltet. Diese durchlaufen den gleichen Release Prozess wie Eigenentwicklungen.
 - Secrets werden durch ExternalSecrets mit einem Vault ClusterSecretStore verwaltet.
+- Container Images werden du Nexus Repository bereitgestellt.
+- Es existiert ein Bestellprozess um Images von einem öffentlichen Docker Hub Repository oder einem On Prem Repository in eines den Clustern zur Verfügung stehenden Nexus Repository zu synchronisieren.
+- Images und Helm Charts werden vor Bereistellung in Nexus durch Sysdig auf CVEs geprüft. CVEs größer oder gleich 9 verhindern die Bestellung.
+- Zur Laufzeit werden Workloads weder dynamisch noch statisch auf Sicherheitslücken analysiert. Insbesondere werden images nicht mehr durch Sysdig auf CVEs untersucht.
 
 ## Unklar
 
