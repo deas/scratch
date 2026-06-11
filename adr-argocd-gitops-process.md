@@ -20,7 +20,7 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Der Deployment Prozess wird implementiert mit ArgoCD und GitOps Prinzipien
 - Es besteht eine starke Präferenz für die Nutzung von Helm Charts (statt einfachen Manifesten und/oder kustomize)
 - Die GitOps Repository Ordnerstruktur ist vorgegeben als `applications/{common,admin,customer}`. Die Leaf Ordner reflektieren gemeinsame genutzte und jeweils exclusive Anwendungen.
-- ArgoCD wird mit einer Root Application gebootstrapped. Eine Gitlab Pipelines erzeugt und deployt sie. Die Root Applikation eines Clusters ist nicht Teil des Repositories.
+- ArgoCD wird mit einer Root Application gebootstrapped. Eine Gitlab Pipelines erzeugt und deployt sie. Die Root Applikation eines Clusters ist nicht Teil des Repositories. Die Typ des Clusters ist Parameter bei der Erzeugung der Root Application.
 - Der Code im GitOps Repository enthält keine Deployment Informationen über Individuelle cluster. Der einzige Code welcher Rückschlüsse auf einzelne Customer Cluster zulässt sind Prometheus Scrape Konfigurationen des Control Clusters welche Endpunkte in Customer Clustern referenzieren.
 - Die Dateisystemstruktur erlaubt es insofern nicht, einzelne Customer Cluster anzusteuern.
 - ArgoCD läuft im Pull Betrieb auf allen Clustern.
