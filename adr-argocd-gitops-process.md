@@ -49,9 +49,10 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 
 ## Quellennachweis
 
-## Random
+## Random ScratchPad
 
 - Nachfragen (insbesondere was unklar ist)
 - Prozess illustrieren
 - Kritiker! (Fallstricke)
 - Trade-Offs/Alternativen
+- Sync-Phases?
