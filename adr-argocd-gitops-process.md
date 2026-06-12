@@ -5,6 +5,7 @@
 Das Platform Team betreibt eine produktive Kubernetes Infrastruktur on Prem mit folgenden Eigenschaften:
 
 - Zwei Typen von Clustern: Admin und Customer
+- Es existiert jeweils ein VPC pro Cluster Typ.
 - Genau ein Admin (Control Plane) Cluster
 - Etwa zwei Dutzend gleichförmige Customer Cluster
 - Clustern haben keinen Zugriff auf das Internet
@@ -19,10 +20,11 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Auf dem Admin Cluster werden keine Customer Workloads betrieben. Produktive Kundenprozesse hängen nicht davon ab.
 - Der Deployment Prozess wird implementiert mit ArgoCD und GitOps Prinzipien
 - ArgoCD Applikationen auf Produktion werden auschließlich im Auto-Sync Module betrieben.
+- ArgoCD Applikationen nutzen Sync-Waves um die Reihenfolge von Deployments zu steuern.
 - Es besteht eine starke Präferenz für die Nutzung von Helm Charts (statt einfachen Manifesten und/oder kustomize)
 - Die GitOps Repository Ordnerstruktur ist vorgegeben als `applications/{common,admin,customer}`. Die Leaf Ordner reflektieren gemeinsame genutzte und jeweils exclusive Anwendungen.
 - ArgoCD wird mit einer Root Application gebootstrapped. Eine Gitlab Pipelines erzeugt und deployt sie. Die Root Applikation eines Clusters ist nicht Teil des Repositories. Die Typ des Clusters ist Parameter bei der Erzeugung der Root Application.
-- Der Code im GitOps Repository enthält keine Deployment Informationen über Individuelle cluster. Der einzige Code welcher Rückschlüsse auf einzelne Customer Cluster zulässt sind Prometheus Scrape Konfigurationen des Control Clusters welche Endpunkte in Customer Clustern referenzieren.
+- Der Code im GitOps Repository enthält keine Deployment Informationen über Individuelle cluster. Der einzige Code welcher Rückschlüsse auf einzelne Customer Cluster zulassen könnte sind Prometheus Scrape Konfigurationen des Admin Clusters welche Endpunkte in Customer Clustern referenzieren. ScrapeConfig Endpunkte dürfen deshalb nicht mit git merge auf main auf den produktiven Branch propagieren.
 - Die Dateisystemstruktur erlaubt es insofern nicht, einzelne Customer Cluster anzusteuern.
 - ArgoCD läuft im Pull Betrieb auf allen Clustern.
 - In den Clustern deployte Application Helm Charts werden ausschließlich von einem Helm Repository oder einer OCI Registry bezogen (On Prem Nexus)
@@ -34,10 +36,11 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Die Produktive Umgebung wird auschließlich durch den main Branch abgebildet. Commits auf main Branch sind ausschließlich merges aus dem development Branch.
 - Es existieren dedizierte Cluster zum Testen von Deployments bevor Änderungen durch git merge auf main in Produktion propagiert wird.
 - Kubernetes Cluster dienen auschlißelich Produktion oder zu Testzwecken - niemals beiden Zwecken.
-- ArgoCD Applikationen aus dem GitOps Repository referenzieren weitere GitOps Repositories
+- ArgoCD Applikationen aus dem GitOps Repository referenzieren weitere GitOps Repositories. Es existieren zur Zeit drei (sechs?), welche Datenbank Deployments von Customers abbilden.
 - Auf Test Deployments können aus mehreren Branches kommen.
 - Helm Releases können uneingeschränkt auf alternativer Infrastruktur (z.B. kind Clustern) betrieben und getestet werden
 - Im öffentlichen Gitlab Server werden Kopien (in der Regel keine Forks) von Third Party Upstream Helm Charts (z.B. Datenbank Operatoren) verwaltet. Diese durchlaufen den gleichen Release Prozess wie Eigenentwicklungen.
+- Eine Teilmenge der Charts (z.B. Datenbank Operatoren) des öffentlichen Gitlab Server sind für Nutzung auf einer weiteren zukünftigen Infrastruktur vorgesehen.
 - Secrets werden durch ExternalSecrets mit einem Vault ClusterSecretStore verwaltet.
 - Container Images werden du Nexus Repository bereitgestellt.
 - Es existiert ein Bestellprozess um Images von einem öffentlichen Docker Hub Repository oder einem On Prem Repository in eines den Clustern zur Verfügung stehenden Nexus Repository zu synchronisieren.
@@ -54,10 +57,25 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 
 ## Quellennachweis
 
-## Random ScratchPad
+## Persönliches Random ScratchPad - im Rahmen des ADR ignorieren
 
 - Nachfragen (insbesondere was unklar ist)
 - Prozess illustrieren
 - Kritiker! (Fallstricke)
 - Trade-Offs/Alternativen
-- Sync-Phases?
+- Sync-Waves?
+
+- "Alignment"
+
+GitOps Repo/Prozess war Teil meines "Struktur" Planes Repos/Branches/Folders. Nun ist das "Testing" geworden, und wir haben zwei große Team Abstimmungen.
+
+- Rückzug aus common operators? Too many chefs?
+- "Sichtbarkeit" branches vs. Folderss
+- Solution slopped by spec
+- Propagation prozess?
+- helm dance demo?
+- branch/folder mapping "dev": Uniform?
+- Wo (insbesondere Pipelines) werden state repos/branches/tags referenziert?
+- Sync waves?
+- Helm Aggregation "Workaround" (values Propagation from root)?
+- Pilot Monitoring/Observability Central vs. full Common-Operators?
