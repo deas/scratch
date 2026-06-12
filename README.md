@@ -26,6 +26,7 @@ GitOps Repo/Prozess war Teil meines "Struktur" Alignment Planes Repos/Branches/F
 - Kompatibilität mit Propagation Tools wie kargo?
 - HA/Geo-Redundanz? (Nicht für Operatoren?)
 - Opencode enforced Entkopplung von On Prom Infra
+- Arch Characteristics (Values): Agilität/Speed -> Build for Change?
 - Helm Aggregation "Workaround" (values Propagation from root)?
 - Pilot Monitoring/Observability Central vs. full Common-Operators?
 - Auditability?
