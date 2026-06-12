@@ -81,3 +81,4 @@ GitOps Repo/Prozess war Teil meines "Struktur" Planes Repos/Branches/Folders. Nu
 - Helm Aggregation "Workaround" (values Propagation from root)?
 - Pilot Monitoring/Observability Central vs. full Common-Operators?
 - Auditability?
+- Constraint Classes: ArgoCD, Security/Governance, On-Prem Infra/Umsysteme, Team Strukturen
