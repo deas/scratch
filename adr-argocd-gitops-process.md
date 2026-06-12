@@ -38,7 +38,7 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Es existieren dedizierte Cluster zum Testen von Deployments bevor Änderungen durch git merge auf main in Produktion propagiert wird.
 - Kubernetes Cluster dienen auschlißelich Produktion oder zu Testzwecken - niemals beiden Zwecken.
 - ArgoCD Applikationen aus dem GitOps Repository referenzieren weitere GitOps Repositories. Es existieren zur Zeit drei (sechs?), welche Datenbank Deployments von Customers abbilden.
-- Auf Test Deployments können aus mehreren Branches kommen.
+- Test Deployments können aus mehreren Branches kommen.
 - Helm Releases können uneingeschränkt auf alternativer Infrastruktur (z.B. kind Clustern) betrieben und getestet werden
 - Im öffentlichen Gitlab Server werden Kopien (in der Regel keine Forks) von Third Party Upstream Helm Charts (z.B. Datenbank Operatoren) verwaltet. Diese durchlaufen den gleichen Release Prozess wie Eigenentwicklungen.
 - Eine Teilmenge der Charts (z.B. Datenbank Operatoren) des öffentlichen Gitlab Server sind für Nutzung auf einer weiteren zukünftigen Infrastruktur vorgesehen.
