@@ -24,7 +24,8 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Es besteht eine starke Präferenz für die Nutzung von Helm Charts (statt einfachen Manifesten und/oder kustomize)
 - Die GitOps Repository Ordnerstruktur ist vorgegeben als `applications/{common,admin,customer}`. Die Leaf Ordner reflektieren gemeinsame genutzte und jeweils exclusive Anwendungen.
 - ArgoCD wird mit einer Root Application gebootstrapped. Eine Gitlab Pipelines erzeugt und deployt sie. Die Root Applikation eines Clusters ist nicht Teil des Repositories. Die Typ des Clusters ist Parameter bei der Erzeugung der Root Application.
-- Der Code im GitOps Repository enthält keine Deployment Informationen über Individuelle cluster. Der einzige Code welcher Rückschlüsse auf einzelne Customer Cluster zulassen könnte sind Prometheus Scrape Konfigurationen des Admin Clusters welche Endpunkte in Customer Clustern referenzieren. ScrapeConfig Endpunkte dürfen deshalb nicht mit git merge auf main auf den produktiven Branch propagieren.
+- Der Code im GitOps Repository enthält keine Deployment Informationen über Individuelle cluster. Der einzige Code welcher Rückschlüsse auf einzelne Customer Cluster zulassen könnte sind Prometheus Föderation Scrape Konfigurationen des Admin Clusters welche Endpunkte in Customer Clustern referenzieren. ScrapeConfig Endpunkte dürfen deshalb nicht mit git merge auf main auf den produktiven Branch propagieren.
+- Prometheus Föderation benötigt Firewall Freischaltungen zwischen Admin- und Customer Clustern. Diese werden nicht durch das GitOps Repository gesteuert.
 - Die Dateisystemstruktur erlaubt es insofern nicht, einzelne Customer Cluster anzusteuern.
 - ArgoCD läuft im Pull Betrieb auf allen Clustern.
 - In den Clustern deployte Application Helm Charts werden ausschließlich von einem Helm Repository oder einer OCI Registry bezogen (On Prem Nexus)
@@ -62,7 +63,7 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 - Nachfragen (insbesondere was unklar ist)
 - Prozess illustrieren
 - Kritiker! (Fallstricke)
-- Trade-Offs/Alternativen
+- Trade-Offs (Speed/Stability/Complexity/Generalization)/Alternativen
 - Sync-Waves?
 
 - "Alignment"
