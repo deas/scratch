@@ -69,8 +69,9 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 
 GitOps Repo/Prozess war Teil meines "Struktur" Planes Repos/Branches/Folders. Nun ist das "Testing" geworden, und wir haben zwei große Team Abstimmungen.
 
+- Plan: Jeder challenged ADR (z.B. mit LLM), Eine gemeinsame Roast Session
 - Rückzug aus common operators? Too many chefs?
-- "Sichtbarkeit" branches vs. Folderss
+- "Sichtbarkeit" Branches vs. Folders
 - Solution slopped by spec
 - Propagation prozess?
 - helm dance demo?
@@ -79,3 +80,4 @@ GitOps Repo/Prozess war Teil meines "Struktur" Planes Repos/Branches/Folders. Nu
 - Sync waves?
 - Helm Aggregation "Workaround" (values Propagation from root)?
 - Pilot Monitoring/Observability Central vs. full Common-Operators?
+- Auditability?
