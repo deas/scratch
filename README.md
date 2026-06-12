@@ -30,6 +30,7 @@ GitOps Repo/Prozess war Teil meines "Struktur" Alignment Planes Repos/Branches/F
 - Clustern: Must/Should, Tag: Arch Characteristics
 - Mermaid Diagramme?
 - Gitlab Sync öffentlich/On Prem nicht möglich (Warum genau?)
+- Kommunikatation On-Prem mit Internet kann nur von On-Prem über einen Proxy initiert werden
 - Helm Aggregation "Workaround" (values Propagation from root)?
 - Pilot Monitoring/Observability Central vs. full Common-Operators?
 - Auditability?
