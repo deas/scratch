@@ -67,7 +67,7 @@ Ziel dieses ADRs ist es einen GitOps Change Prozess zu definieren.
 
 - "Alignment"
 
-GitOps Repo/Prozess war Teil meines "Struktur" Planes Repos/Branches/Folders. Nun ist das "Testing" geworden, und wir haben zwei große Team Abstimmungen.
+GitOps Repo/Prozess war Teil meines "Struktur" Planes Repos/Branches/Folders. Nun ist das "Testing" geworden, und wir haben zwei große Team Abstimmungen -> Kognitive Load -> Unsicherheit? Fairness?
 
 - Plan: Jeder challenged ADR (z.B. mit LLM), Eine gemeinsame Roast Session
 - Rückzug aus common operators? Too many chefs?
