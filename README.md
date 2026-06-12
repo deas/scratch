@@ -21,6 +21,9 @@ GitOps Repo/Prozess war Teil meines "Struktur" Alignment Planes Repos/Branches/F
 - branch/folder mapping "dev": Uniform?
 - Wo (insbesondere Pipelines) werden state repos/branches/tags referenziert?
 - Sync waves: Explizite Deps + Ordering vs. Retry (-> Concurrency/Speed)
+- Alternatives argocd conductor Modell
+- ApplicationSet?
+- Kompatibilität mit Propagation Tools wie kargo?
 - Helm Aggregation "Workaround" (values Propagation from root)?
 - Pilot Monitoring/Observability Central vs. full Common-Operators?
 - Auditability?
