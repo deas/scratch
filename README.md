@@ -24,6 +24,7 @@ GitOps Repo/Prozess war Teil meines "Struktur" Alignment Planes Repos/Branches/F
 - Alternatives argocd conductor Modell
 - ApplicationSet?
 - Kompatibilität mit Propagation Tools wie kargo?
+- HA/Geo-Redundanz? (Nicht für Operatoren?)
 - Helm Aggregation "Workaround" (values Propagation from root)?
 - Pilot Monitoring/Observability Central vs. full Common-Operators?
 - Auditability?
