@@ -10,6 +10,7 @@ Wir betrachten hier nur Observability/Monitoring.
 
 - Helm charts nutzen values-sample.yaml Muster für mehrere Namespaces (kein `Release.Namespace`)
 - Vorgabe Übergabe `clusterName` durch helm sources macht direkte Nutzung von Upstream charts schwieriger (FQNs / Adapter Code / Chart Author muss dafür `tpl` Unterstützung vorgesehen haben) -> Eher Forking?
+- kustomized-helm würde Forks mindestens in Teilen ersetzen, vielleicht komplett Upstream sinnvoll möglich machen.
 - Subcharts: Nutzung exploded + packaged (Chart.yml) schwierig implementierbar, "Lösung" Vendoring unerwünscht
 - Chart Releases in ArgoCD sources haben intransparente Abhängigkeiten? (`prometheus` chart erzeugt z.B. Namespace für alle die nutzen)
 - `--CreateNamespace: false`, `destination.namespace: ... (Release.Namespace)`: Irreführend für Helm-Natives, wenn "intransparent" `namespace: {...}` genutzt wird?
