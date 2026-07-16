@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    # 1) Prometheus Helm chart (feature branch)
+    - repoURL: https://github.com/contentreich/observability-charts.git
+      targetRevision: feature/observability
+      path: charts/prometheus
+      helm:
+        # Values contributed by the gitops repo (source #4 below) via its ref
+        valueFiles:
+          - $values/apps/observability/prometheus/values.yaml
+        parameters:
+          - name: clusterName
+            value: dev-cluster-01
+
+    # 2) Grafana Helm chart (feature branch)
+    - repoURL: https://github.com/contentreich/observability-charts.git
+      targetRevision: feature/observability
+      path: charts/grafana
+      helm:
+        valueFiles:
+          - $values/apps/observability/grafana/values.yaml
+        parameters:
+          - name: clusterName
+            value: dev-cluster-01
+
+    # 3) Loki Helm chart (feature branch)
+    - repoURL: https://github.com/contentreich/observability-charts.git
+      targetRevision: feature/observability
+      path: charts/loki
+      helm:
+        valueFiles:
+          - $values/apps/observability/loki/values.yaml
+        parameters:
+          - name: clusterName
+            value: dev-cluster-01
+
+    # 4) GitOps values repo — provides the values files the charts above refer to.
+    #    Registered as a `ref` (no path rendered on its own); consumed via $values.
+    - repoURL: https://github.com/contentreich/observability-gitops.git
+      targetRevision: main
+      ref: values

@@ -3,6 +3,11 @@ set -euo pipefail
 
 CLUSTER_NAME="${CLUSTER_NAME:-hades}"
 
+# Path to a corporate/proxy CA cert (PEM). When set, it is injected into every
+# node's trust store so containerd can pull images through a TLS-intercepting
+# proxy. kind already picks up HTTP_PROXY/HTTPS_PROXY/NO_PROXY from the host env.
+CUSTOM_CA_CERT="${CUSTOM_CA_CERT:-}"
+
 INSTALL_KPS="${INSTALL_KPS:-yes}"
 KPS_RELEASE_NAME="${KPS_RELEASE_NAME:-kps}"
 KPS_NAMESPACE="${KPS_NAMESPACE:-monitoring}"
@@ -36,6 +41,11 @@ for cmd in kind kubectl helm; do
   }
 done
 
+if [[ -n "$CUSTOM_CA_CERT" && ! -f "$CUSTOM_CA_CERT" ]]; then
+  echo "CUSTOM_CA_CERT set but file not found: $CUSTOM_CA_CERT" >&2
+  exit 1
+fi
+
 if kind get clusters | grep -qx "$CLUSTER_NAME"; then
   echo "kind cluster '$CLUSTER_NAME' already exists"
   echo "  note: extraPortMappings are fixed at creation; delete the cluster to change them"
@@ -45,6 +55,15 @@ else
 fi
 
 docker update --restart unless-stopped "${CLUSTER_NAME}-control-plane"
+
+if [[ -n "$CUSTOM_CA_CERT" ]]; then
+  echo "injecting custom CA into node trust stores: $CUSTOM_CA_CERT"
+  for node in $(kind get nodes --name "$CLUSTER_NAME"); do
+    docker cp "$CUSTOM_CA_CERT" "${node}:/usr/local/share/ca-certificates/corporate-proxy-ca.crt"
+    docker exec "$node" update-ca-certificates
+    docker exec "$node" systemctl restart containerd
+  done
+fi
 
 kubectl config use-context "kind-${CLUSTER_NAME}" >/dev/null
 

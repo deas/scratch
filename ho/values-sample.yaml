@@ -1,0 +1,15 @@
+namespace:
+  name: prometheus
+  aName: a
+  bName: b
+
+externalSecret:
+  spec: {}
+
+x:
+  externalSecret:
+    spec: {}
+
+y:
+  externalSecret:
+    spec: {}
