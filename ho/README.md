@@ -3,12 +3,11 @@
 Wir betrachten hier nur Observability/Monitoring.
 
 - Was war das Ziel des Helm Epics? Meine Erwartung war Helm-Native first, möglichst Cloud Agnostic und möglichst Vendor Blueprints (Helm Charts) as is nutzen -> Maintainance
-- Manifest "Retrofit" imho irreführend für Helm-Natives die Historie nicht kennen (Onboarding)
+- Jinja2 Manifest "Retrofit" war erwartet/gewünscht? imho irreführend für Helm-Natives die Historie nicht kennen (Onboarding)
 - Nun: Zwischen zwei Welten?
 
 ## Betrachtung ArgoCD App und Helm Releases in sources
 
-- Prometheus Chart scheint legacy jinja2 template Retrofit zu sein?
 - Helm charts nutzen values-sample.yaml Muster für mehrere Namespaces (kein `Release.Namespace`)
 - Vorgabe Übergabe `clusterName` durch helm sources macht direkte Nutzung von Upstream charts schwieriger (FQNs / Adapter Code / Chart Author muss dafür `tpl` Unterstützung vorgesehen haben) -> Eher Forking?
 - Subcharts: Nutzung exploded + packaged (Chart.yml) schwierig implementierbar, "Lösung" Vendoring unerwünscht
