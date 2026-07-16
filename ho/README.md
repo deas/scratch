@@ -4,6 +4,7 @@ Wir betrachten hier nur observability/Monitoring.
 
 - Was war das Ziel des Helm Epics? Meine Erwartung war Helm-Native first, möglichst Cloud Agnostic und möglichst Vendor Blueprints (Helm Charts) as is nutzen -> Maintainance
 - Manifest "Retrofit" imho irreführend für Helm-Natives die Historie nicht kennen (Onboarding)
+- Nun: Zwischen zwei Welten?
 
 ## Betrachtung ArgoCD App und Helm Releases in sources
 
